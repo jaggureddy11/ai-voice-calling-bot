@@ -41,11 +41,41 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+let dashboardChart = null;
+
+// Initialize Chart
+function initChart() {
+  const ctx = document.getElementById('analyticsChart').getContext('2d');
+  dashboardChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Connected', 'Failed', 'Pending/Retrying'],
+      datasets: [{
+        data: [0, 0, 0],
+        backgroundColor: ['rgba(0, 230, 118, 0.8)', 'rgba(248, 113, 113, 0.8)', 'rgba(255, 255, 255, 0.2)'],
+        borderColor: ['#00E676', '#F87171', '#555'],
+        borderWidth: 1,
+        hoverOffset: 10
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#E2E8F0', font: { family: 'Outfit', size: 14 } } }
+      }
+    }
+  });
+}
+
 // Update Global KPI Trackers
 function updateStats() {
   let success = 0, failed = 0, active = 0;
   passengers.forEach(p => {
-    if(!p.call_logs || p.call_logs.length === 0) return;
+    if(!p.call_logs || p.call_logs.length === 0) {
+      active++;
+      return;
+    }
     const s = p.call_logs[0].status;
     if(s === 'completed') success++;
     else if(s === 'failed') failed++;
@@ -56,6 +86,12 @@ function updateStats() {
   document.getElementById('stat-good').textContent = success;
   document.getElementById('stat-fail').textContent = failed;
   document.getElementById('stat-retry').textContent = active;
+
+  // Update live chart
+  if (dashboardChart) {
+    dashboardChart.data.datasets[0].data = [success, failed, active];
+    dashboardChart.update();
+  }
 }
 
 // Network Fetch
@@ -77,13 +113,13 @@ async function fetchPassengers() {
 function renderTable() {
   passengersBody.innerHTML = '';
   if (passengers.length === 0) {
-    passengersBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #555;">No passengers ingested into active manifest.</td></tr>`;
+    passengersBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #555; padding:2rem;">No passengers ingested into active manifest. Add them using the Action Panel.</td></tr>`;
     return;
   }
   
   passengers.forEach(p => {
     let statusClass = 'pending';
-    let statusText = 'Pending';
+    let statusText = 'Pending Initiation';
     let attempts = 0;
     
     if (p.call_logs && p.call_logs.length > 0) {
@@ -98,11 +134,22 @@ function renderTable() {
       <td><div class="info-stack"><span>${p.name}</span><span class="info-sub">${p.phone}</span></div></td>
       <td><div class="info-stack"><span>${p.boarding_point}</span><span class="info-sub">${p.time}</span></div></td>
       <td><div class="status-pill status-${statusClass.toLowerCase()}">${statusText}</div></td>
-      <td><span style="color:#666;">${attempts > 0 ? attempts : '-'} / 3</span></td>
+      <td><span style="color:#666; font-weight:700;">${attempts > 0 ? attempts : '-'} / 3</span></td>
     `;
     passengersBody.appendChild(tr);
   });
 }
+
+// CSV Drag and Drop Visuals
+const csvZone = document.querySelector('.csv-upload-zone');
+csvZone.addEventListener('dragover', (e) => { e.preventDefault(); csvZone.style.borderColor = '#00E676'; csvZone.style.background = 'rgba(0,230,118,0.05)'; });
+csvZone.addEventListener('dragleave', () => { csvZone.style.borderColor = 'rgba(255,255,255,0.1)'; csvZone.style.background = 'transparent'; });
+csvZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  csvZone.style.borderColor = 'rgba(255,255,255,0.1)'; 
+  csvZone.style.background = 'transparent';
+  showToast('CSV Parsing Simulation Enabled! Routing to batch process.');
+});
 
 // Handle Form Submission
 addForm.addEventListener('submit', async (e) => {
@@ -131,14 +178,15 @@ addForm.addEventListener('submit', async (e) => {
     if (response.ok) {
       showToast('Passenger successfully ingested!');
       fetchPassengers();
-    }
-  } catch (error) { showToast('Server Sync Error'); } 
+      document.getElementById('name').value = '';
+    } else { throw new Error('Query block'); }
+  } catch (error) { showToast('Database constraint check failed. Operator/Trip missing?'); } 
   finally { btn.innerHTML = 'ADD SINGLE RECORD'; btn.disabled = false; }
 });
 
 // Trigger Notification Payload
 triggerBtn.addEventListener('click', async () => {
-  if (passengers.length === 0) return showToast('Manifest is empty.');
+  if (passengers.length === 0) return showToast('Manifest is empty. Ingest data first.');
   JOURNEY_ID = document.getElementById('trip-id').value;
   
   triggerBtn.innerHTML = '<span class="pulse-ring" style="position:relative; width:8px; height:8px;"></span> DISPATCHING...';
@@ -151,7 +199,7 @@ triggerBtn.addEventListener('click', async () => {
       body: JSON.stringify({ journeyId: JOURNEY_ID })
     });
     if (response.ok) {
-      showToast('Dispatch Sequence Running!');
+      showToast('Dispatch Sequence Sent to Queue!');
       fetchPassengers();
       document.querySelector('[data-target="view-monitoring"]').click(); // Auto-switch to monitoring tab
     }
@@ -193,7 +241,6 @@ opSelect.addEventListener('change', (e) => {
   
   busSelect.disabled = false;
   
-  // Auto Generate Journey ID hash
   document.getElementById('trip-id').value = `${op}-${Math.floor(Math.random() * 900) + 100}-DYN`;
   document.getElementById('trip-dep').value = '22:00';
 });
@@ -205,4 +252,5 @@ document.getElementById('save-preset-btn').addEventListener('click', () => {
 });
 
 // Load Init
+initChart();
 fetchPassengers();
