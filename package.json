@@ -5,7 +5,9 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "frontend": "npx serve frontend -p 5000",
+    "dev:all": "npx concurrently \"npm run dev\" \"npm run frontend\""
   },
   "keywords": [
     "voice",
@@ -29,6 +31,8 @@
     "twilio": "^5.0.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.0",
+    "serve": "^14.2.6"
   }
 }

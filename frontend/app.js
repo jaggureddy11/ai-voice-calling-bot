@@ -24,25 +24,22 @@ function showToast(message) {
   }, 3000);
 }
 
-// Fetch Passengers and their call logs
+// Fetch Passengers via Backend API
 async function fetchPassengers() {
-  const { data, error } = await supabase
-    .from('passengers')
-    .select(`
-      id, name, phone, boarding_point, time,
-      call_logs ( status )
-    `)
-    .eq('journey_id', JOURNEY_ID)
-    .order('id', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching passengers:', error);
-    return;
+  try {
+    const response = await fetch(`http://localhost:3000/api/calls/passengers/${JOURNEY_ID}`);
+    const data = await response.json();
+    
+    if (response.ok) {
+      passengers = data;
+      passengerCount.textContent = passengers.length;
+      renderTable();
+    } else {
+      console.error('Error fetching passengers:', data.error);
+    }
+  } catch (error) {
+    console.error('Network Error:', error);
   }
-
-  passengers = data;
-  passengerCount.textContent = passengers.length;
-  renderTable();
 }
 
 // Render Table
@@ -92,31 +89,38 @@ addForm.addEventListener('submit', async (e) => {
   const time = document.getElementById('time').value;
 
   const btn = addForm.querySelector('button');
-  btn.textContent = 'Adding...';
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = 'Adding...';
   btn.disabled = true;
 
-  const { error } = await supabase
-    .from('passengers')
-    .insert([{
-      journey_id: JOURNEY_ID,
-      name,
-      phone,
-      boarding_point,
-      time,
-      language: 'en-IN'
-    }]);
+  try {
+    const response = await fetch('http://localhost:3000/api/calls/passengers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        journey_id: JOURNEY_ID,
+        name,
+        phone,
+        boarding_point,
+        time,
+        language: 'en-IN'
+      })
+    });
 
-  btn.textContent = 'Add to Journey';
-  btn.disabled = false;
-
-  if (error) {
+    if (response.ok) {
+      showToast('Passenger securely added to manifest!');
+      addForm.reset();
+      document.getElementById('time').value = '8:30 PM';
+      fetchPassengers();
+    } else {
+      throw new Error('Server rejected insert');
+    }
+  } catch (error) {
     showToast('Failed to add passenger');
     console.error(error);
-  } else {
-    showToast('Passenger added successfully!');
-    addForm.reset();
-    document.getElementById('time').value = '8:30 PM'; // reset default
-    fetchPassengers();
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
   }
 });
 

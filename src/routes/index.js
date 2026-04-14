@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const callController = require('../controllers/callController');
 
+// Passenger Management Endpoints
+router.get('/passengers/:journeyId', callController.getPassengers);
+router.post('/passengers', callController.addPassenger);
+
 // Trigger endpoint
 router.post('/notify-journey', callController.notifyJourney);
 

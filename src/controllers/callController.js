@@ -1,6 +1,37 @@
 const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
 
+const getPassengers = async (req, res) => {
+  const { journeyId } = req.params;
+  const { data, error } = await supabase
+    .from('passengers')
+    .select(`id, name, phone, boarding_point, time, call_logs ( status )`)
+    .eq('journey_id', journeyId)
+    .order('id', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json(data || []);
+};
+
+const addPassenger = async (req, res) => {
+  const { journey_id, name, phone, boarding_point, time, language } = req.body;
+  
+  // Upsert the journey dynamically to completely prevent Foreign Key constraint errors
+  await supabase.from('journeys').upsert([{ 
+    id: journey_id, 
+    route: 'Dynamic Terminal Route', 
+    departure_time: time 
+  }], { onConflict: 'id' });
+
+  const { data, error } = await supabase
+    .from('passengers')
+    .insert([{ journey_id, name, phone, boarding_point, time, language }])
+    .select();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+};
+
 const notifyJourney = async (req, res) => {
   try {
     // Allows passing journeyId in body or query/params flexibly
@@ -134,6 +165,8 @@ const handleVoiceRespond = async (req, res) => {
 };
 
 module.exports = {
+  getPassengers,
+  addPassenger,
   notifyJourney,
   handleIncomingVoice,
   handleVoiceRespond
