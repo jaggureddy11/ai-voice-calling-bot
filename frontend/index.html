@@ -176,6 +176,28 @@
             </table>
           </div>
         </div>
+
+        <!-- NEW: Unreachable Panel -->
+        <div id="unreachable-section" class="glass-card list-card hidden" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.2);">
+          <div class="card-header flex-between">
+            <h3 style="color: #F87171;">⚠️ Unreachable Manifest</h3>
+            <p>Passengers who missed all voice attempts. Action required.</p>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Passenger</th>
+                  <th>Last Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="unreachable-body">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- VIEW 3: AI INTERACTIONS -->

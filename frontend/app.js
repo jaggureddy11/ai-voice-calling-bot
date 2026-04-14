@@ -15,6 +15,9 @@ const triggerBtn = document.getElementById('trigger-calls-btn');
 const toast = document.getElementById('toast');
 const navBtns = document.querySelectorAll('.nav-btn');
 const views = document.querySelectorAll('.view-section');
+const aiLogsBody = document.getElementById('ai-logs-body');
+const unreachableBody = document.getElementById('unreachable-body');
+const unreachableSection = document.getElementById('unreachable-section');
 
 // Navigation Logic
 navBtns.forEach(btn => {
@@ -78,8 +81,8 @@ function updateStats() {
     }
     const s = p.call_logs[0].status;
     if(s === 'completed') success++;
-    else if(s === 'failed') failed++;
-    else if(s === 'initiated') active++;
+    else if(['failed', 'busy', 'no-answer', 'canceled'].includes(s)) failed++;
+    else if(['initiated', 'ringing', 'queued', 'in-progress'].includes(s)) active++;
   });
   
   document.getElementById('stat-total').textContent = passengers.length;
@@ -109,6 +112,17 @@ async function fetchPassengers() {
   } catch (error) { console.error('Network Data Error:', error); }
 }
 
+// Fetch AI Interaction Logs
+async function fetchAILogs() {
+  try {
+    const response = await fetch('http://localhost:3000/api/calls/ai-logs');
+    const data = await response.json();
+    if (response.ok) {
+      renderAITable(data);
+    }
+  } catch (error) { console.error('AI Log Fetch Error:', error); }
+}
+
 // Table Re-render
 function renderTable() {
   passengersBody.innerHTML = '';
@@ -124,19 +138,88 @@ function renderTable() {
     
     if (p.call_logs && p.call_logs.length > 0) {
       const latestLog = p.call_logs[0];
-      statusText = latestLog.status;
+      statusText = latestLog.status.replace('-', ' ').toUpperCase();
       statusClass = latestLog.status;
-      attempts = p.call_logs.length;
+      attempts = latestLog.attempt_count || 1;
     }
 
     const tr = document.createElement('tr');
+    const lateBadge = latestLog && latestLog.is_flagged ? `<span class="status-pill status-failed" style="margin-left: 8px; font-size: 0.7rem; padding: 2px 8px;">LATE ALERT</span>` : '';
+
     tr.innerHTML = `
-      <td><div class="info-stack"><span>${p.name}</span><span class="info-sub">${p.phone}</span></div></td>
+      <td><div class="info-stack"><span>${p.name}${lateBadge}</span><span class="info-sub">${p.phone}</span></div></td>
       <td><div class="info-stack"><span>${p.boarding_point}</span><span class="info-sub">${p.time}</span></div></td>
       <td><div class="status-pill status-${statusClass.toLowerCase()}">${statusText}</div></td>
       <td><span style="color:#666; font-weight:700;">${attempts > 0 ? attempts : '-'} / 3</span></td>
     `;
     passengersBody.appendChild(tr);
+  });
+
+  renderUnreachable();
+}
+
+// Unreachable logic
+function renderUnreachable() {
+  const unreachable = passengers.filter(p => {
+    if (!p.call_logs || p.call_logs.length === 0) return false;
+    const s = p.call_logs[0].status;
+    return ['failed', 'busy', 'no-answer'].includes(s);
+  });
+
+  unreachableBody.innerHTML = '';
+  if (unreachable.length === 0) {
+    unreachableSection.classList.add('hidden');
+    return;
+  }
+
+  unreachableSection.classList.remove('hidden');
+  unreachable.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="info-stack"><span>${p.name}</span><span class="info-sub">${p.phone}</span></div></td>
+      <td><div class="status-pill status-${p.call_logs[0].status.toLowerCase()}">${p.call_logs[0].status.toUpperCase()}</div></td>
+      <td>
+        <button class="btn-submit" style="padding: 0.5rem; margin:0;" onclick="sendSMS('${p.id}')">
+          SEND SMS FALLBACK
+        </button>
+      </td>
+    `;
+    unreachableBody.appendChild(tr);
+  });
+}
+
+async function sendSMS(passengerId) {
+  showToast('Sending SMS fallback...');
+  try {
+    const response = await fetch('http://localhost:3000/api/calls/sms-fallback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passengerId })
+    });
+    if (response.ok) {
+      showToast('SMS Sent Successfully!');
+      fetchPassengers();
+    }
+  } catch (err) { showToast('SMS dispatch failed.'); }
+}
+
+// AI Table Re-render
+function renderAITable(logs) {
+  aiLogsBody.innerHTML = '';
+  if (!logs || logs.length === 0) {
+    aiLogsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #555; padding:2rem;">No AI transcripts recorded yet. Trigger a call to see live logic.</td></tr>`;
+    return;
+  }
+
+  logs.forEach(log => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:#fff;">${log.passenger_name || 'Anonymous'}</td>
+      <td>"${log.user_speech}"</td>
+      <td style="color:#00E676;">"${log.bot_response}"</td>
+      <td><div class="status-pill status-${log.sentiment === 'Active' ? 'completed' : 'failed'}">${log.sentiment}</div></td>
+    `;
+    aiLogsBody.appendChild(tr);
   });
 }
 
@@ -216,6 +299,11 @@ supabase.channel('public:call_logs')
     fetchPassengers();
   }).subscribe();
 
+supabase.channel('public:ai_logs')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ai_logs' }, payload => {
+    fetchAILogs();
+  }).subscribe();
+
 // Dynamic SaaS Interaction Logic
 const fleetData = {
   'VRL': ['KA-25-A-1111 (Volvo 9400)', 'KA-25-B-2222 (Sleeper)'],
@@ -254,3 +342,4 @@ document.getElementById('save-preset-btn').addEventListener('click', () => {
 // Load Init
 initChart();
 fetchPassengers();
+fetchAILogs();

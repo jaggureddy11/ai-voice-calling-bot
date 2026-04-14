@@ -6,6 +6,10 @@ const morgan = require('morgan');
 // Start the worker to process queued jobs
 require('./jobs/callWorker'); 
 
+// Start the autonomous journey scheduler
+const { startJourneyScheduler } = require('./jobs/journeyScheduler');
+startJourneyScheduler();
+
 const routes = require('./routes/index');
 
 const app = express();

@@ -2,15 +2,24 @@
 
 BoardPing is an AI-powered voice notification and conversational bot designed to automate passenger communications for mass transit architectures (e.g., AbhiBus, RedBus). 
 
-Built to handle thousands of concurrent calls through robust queue architectures and ultra low-latency AI generation, it automates standard outbound notifications and fields inbound real-time customer conversations over the phone.
+Built for enterprise scale, it handles thousands of concurrent calls through robust BullMQ architectures, providing ultra-low latency AI interactions, autonomous scheduling, and real-time operator observability.
+
+## 🌟 Premium Features
+
+1.  **Autonomous Journey Dispatches**: Background scheduler targets journeys 30m before departure—zero manual effort.
+2.  **Multilingual AI Engine**: Real-time conversational support in **English, Hindi, Telugu, and Kannada**.
+3.  **Semantic Intent Detection**: Automatically flags passengers who report as **"LATE"** using LLM analysis.
+4.  **SMS Fallback System**: High-visibility "Unreachable Manifest" panel for one-click SMS notifications if voice fails.
+5.  **Multi-Operator Architecture**: Built-in support for data isolation across multiple transit companies (SaaS model).
+6.  **Advanced Observability**: Track granular statuses (`Busy`, `No-Answer`, `Ringing`) and call durations in real-time.
 
 ## 💡 System Architecture
 
 1. **Trigger Engine** - Journey-based notifications seamlessly trigger parallel worker dispatches.
-2. **Postgres Storage** - Supabase natively queries `passengers` mapped to `journeys` dynamically logging call statuses (`initiated`, `completed`, `failed`).
-3. **Queue Distribution** - `BullMQ` + `Redis` effortlessly manage job delegation, rate-limiting, and error-retry logic without overloading the Node thread.
-4. **Telephony Bridge** - Twilio Voice API connects programmatic systems directly to global caller cellular networks using TwiML.
-5. **Conversational Engine** - Built-in `<Gather>` integrations capture real-time audio and bounce requests against Groq (`llama-3.3`) for 1-second cadence customer support interactions.
+2. **Postgres Storage** - Supabase natively queries `passengers` mapped to `journeys`.
+3. **Queue Distribution** - `BullMQ` + `Redis` effortlessly manage job delegation, rate-limiting, and error-retry logic.
+4. **Telephony Bridge** - Twilio Voice API connects programmatic systems directly to global networks.
+5. **Conversational Engine** - Groq (`llama-3.3-70b`) provides <1s latency for natural voice interactions.
 
 ---
 
@@ -18,97 +27,78 @@ Built to handle thousands of concurrent calls through robust queue architectures
 - **Backend:** Node.js / Express
 - **Queue/Worker:** BullMQ & Redis
 - **Database:** Supabase (PostgreSQL)
-- **Telephony:** Twilio SDK + VoiceResponse
-- **AI Backend:** Groq API (`llama-3.3-70b-versatile`) for 800+ tokens/sec speeds.
+- **Telephony:** Twilio SDK (Voice + SMS)
+- **AI Backend:** Groq API (`llama-3.3-70b-versatile`)
+- **Frontend:** Vanilla JS / CSS (Bento-style Glassmorphism)
 
 ---
 
-## 🚀 Quick Setup (Development)
+## 🚀 Quick Setup (Production)
 
 ### Prerequisites
 - Node.js (v18+)
-- Redis running on localhost (default port 6379)
-- Twilio Account + Verified Caller IDs
+- Redis
+- Twilio Account (Voice + SMS capability)
 - Groq API Key
 - Supabase Project
 
 ### Installation
 ```bash
 git clone https://github.com/jaggureddy11/ai-voice-calling-bot.git
-cd ai-voice-calling-bot
+cd ai-call-bot
 npm install
 ```
 
 ### Environment Variables
 Copy `.env.example` -> `.env` and fill it with your credentials:
 ```bash
-cp .env.example .env
+BASE_URL=https://your-public-url.loca.lt
+GROQ_API_KEY=your_key
+TWILIO_ACCOUNT_SID=...
 ```
 
 ### Running the System
 ```bash
-# Start backend API & internal BullMQ workers
+# Start autonomous engine & backend
 npm run dev
-
-# Expose local endpoint to Twilio (In a separate terminal)
-npx localtunnel --port 3000
 ```
 
 ---
 
-## 🔗 Endpoints & Usage
+## 📊 Database Schema Extensions
 
-### 1. The Outbound Trigger (Journey Notification)
-Simulate a driver clicking "Notify Passengers". 
-```bash
-curl -X POST http://localhost:3000/api/calls/notify-journey \
--H "Content-Type: application/json" \
--d '{"journeyId": "BLR-HYD-830"}'
-```
-*Triggers an outbound call dispatch that retrieves passengers from Supabase, queues them in Redis, and executes personalized outgoing calls via Twilio.*
-
-### 2. The Inbound Twilio Webhook (AI Loop)
-Set your Twilio number Voice webhook configuration to your server address:
-`POST https://<your-localtunnel>.loca.lt/api/calls/voice`
-
-### 3. Utility Test Script
-Test your inbound conversational LLM loop directly without international PSTN costs using the included testing trigger:
-```bash
-node make-test-call.js
-```
-
----
-
-## 📊 Database Schema (Supabase)
+To enable the latest features, ensure your Supabase schema includes:
 
 ```sql
-CREATE TABLE journeys (
-  id TEXT PRIMARY KEY,
-  route TEXT NOT NULL,
-  departure_time TEXT NOT NULL,
-  status TEXT DEFAULT 'scheduled'
-);
+-- Call Log Extensions
+ALTER TABLE call_logs ADD COLUMN attempt_count INTEGER DEFAULT 0;
+ALTER TABLE call_logs ADD COLUMN is_flagged BOOLEAN DEFAULT false;
+ALTER TABLE call_logs ADD COLUMN duration INTEGER DEFAULT 0;
 
-CREATE TABLE passengers (
-  id SERIAL PRIMARY KEY,
-  journey_id TEXT REFERENCES journeys(id),
-  name TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  boarding_point TEXT NOT NULL,
-  time TEXT NOT NULL,
-  language TEXT DEFAULT 'en-IN'
-);
+-- AI Log Extensions
+ALTER TABLE ai_logs ADD COLUMN intent TEXT;
 
-CREATE TABLE call_logs (
-  id SERIAL PRIMARY KEY,
-  passenger_id INTEGER REFERENCES passengers(id),
-  twilio_sid TEXT,
-  status TEXT DEFAULT 'initiated',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
+-- Journey Scheduler
+ALTER TABLE journeys ADD COLUMN notified_at TIMESTAMP WITH TIME ZONE;
 ```
 
-## 🎯 Immediate Impact
-- 🚀 **Scalability**: Decoupled worker pipelines ensure 100% notification delivery.
+---
+
+## 🔗 Endpoints
+
+### 1. The Autonomous Scheduler
+The system background processes upcoming journeys every minute. 
+`GET /api/calls/notify-journey` (Manual fallback still supported).
+
+### 2. Live Monitoring
+`GET /api/calls/passengers/:journeyId` - Fetch real-time manifest status.
+
+### 3. AI Interaction Dashboard
+`GET /api/calls/ai-logs` - Fetch live transcripts and intent analysis.
+
+---
+
+## 🎯 Impact Metrics
+- 🚀 **Efficiency**: Reduces driver manual calls by 100%.
+- 🗣️ **Accessibility**: Localized AI support improves passenger NPS in rural regions.
 - 👨‍💻 **Observability**: Live SQL logs map call lifecycle states identically to massive platform dashboards.
-- 🗣️ **Cost Effectiveness**: Conversational bounds restrict latency constraints while delivering 99% accuracy against traditional IVR. 

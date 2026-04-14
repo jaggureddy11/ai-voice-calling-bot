@@ -15,25 +15,45 @@ const worker = new Worker('callNotifications', async job => {
   
   if(language === 'hi-IN') {
      message = `Namaste ${name}, aapki bus ${boarding_point} se ${time} par ravaana hogi. Kripya pandra minute pehle pahunch jaayein.`;
+  } else if(language === 'te-IN') {
+     message = `Namaste ${name}, mee bus ${boarding_point} nundi ${time} ki bayaluderutundi. Dayachesi padmudu nimmishalu mundu cherukondi.`;
+  } else if(language === 'kn-IN') {
+     message = `Namaste ${name}, nimma bus ${boarding_point} ninda ${time} gantege horaduttade. Dayavittu hadinaidu nimisha mundagi banni.`;
   }
 
   const twimlObj = new twilioClient.twiml.VoiceResponse();
-  twimlObj.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
+  
+  // Make the call conversational by adding a Gather block
+  const gather = twimlObj.gather({
+    input: 'speech',
+    action: `/api/calls/voice/respond?callLogId=${callLogId}`,
+    speechTimeout: 'auto',
+    language: language || 'en-IN'
+  });
 
-  try {
+  gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
+
+    // Update Supabase with attempt count increment
+    if (callLogId) {
+       await supabase.rpc('increment_attempt', { log_id: callLogId });
+    }
+
     const call = await twilioClient.calls.create({
       twiml: twimlObj.toString(),
       to: phone,
-      from: process.env.TWILIO_FROM_NUMBER
+      from: process.env.TWILIO_FROM_NUMBER,
+      statusCallback: `${process.env.BASE_URL}/api/calls/voice/status`,
+      statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+      statusCallbackMethod: 'POST'
     });
     
     console.log(`[Job ${job.id}] Call triggered successfully! Call SID: ${call.sid}`);
     
-    // Update Supabase Call Log
+    // Update Supabase Call Log with SID and initial status
     if (callLogId) {
       await supabase
         .from('call_logs')
-        .update({ status: 'completed', twilio_sid: call.sid })
+        .update({ status: 'initiated', twilio_sid: call.sid })
         .eq('id', callLogId);
     }
 

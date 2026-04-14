@@ -15,4 +15,13 @@ router.post('/voice', callController.handleIncomingVoice);
 // Voice Callback Endpoint (When speech is gathered)
 router.post('/voice/respond', callController.handleVoiceRespond);
 
+// Twilio Status Callback Endpoint
+router.post('/voice/status', callController.handleVoiceStatus);
+
+// SMS Fallback Endpoint
+router.post('/sms-fallback', callController.sendSMSFallback);
+
+// AI Interaction Logs Endpoint
+router.get('/ai-logs', callController.getAILogs);
+
 module.exports = router;
