@@ -3,19 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BoardPing | AI Dispatch</title>
+  <title>BoardPing | Enterprise UI</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Ultra-premium Modern Font -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  
-  <!-- Subtle animated ambient background -->
   <div class="ambient-glow"></div>
 
   <div class="dashboard-wrapper">
-    <!-- Sleek Vertical Dock -->
     <aside class="sidebar">
       <div class="brand">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32">
@@ -23,105 +19,214 @@
         </svg>
       </div>
       <nav class="nav-menu">
-        <button class="nav-btn active" title="Active Dispatch">
+        <button class="nav-btn active" data-target="view-setup" title="Dispatch Setup">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
         </button>
-        <button class="nav-btn" title="AI Analytics">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <button class="nav-btn" data-target="view-monitoring" title="Live Monitoring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+        </button>
+        <button class="nav-btn" data-target="view-ai" title="AI Interactions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+        </button>
+        <button class="nav-btn" data-target="view-analytics" title="Logs & Analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        </button>
+        <button class="nav-btn" data-target="view-settings" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         </button>
       </nav>
       <div class="user-avatar">
-        <img src="https://i.pravatar.cc/100?img=33" alt="User">
+        <img src="https://i.pravatar.cc/100?img=33" alt="Admin">
       </div>
     </aside>
 
     <main class="main-content">
       
-      <header class="top-bar">
-        <div class="header-titles">
-          <span class="pulse-ring"></span>
-          <div>
-            <p class="subtitle">Live Dispatch Engine</p>
-            <h1>BLR &rarr; HYD <span>(20:30)</span></h1>
-          </div>
-        </div>
-        
-        <button id="trigger-calls-btn" class="btn-premium">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-          INITIATE AI BOARDING
-        </button>
-      </header>
-
-      <section class="bento-grid">
-        
-        <!-- Left: Form -->
-        <div class="glass-card add-card">
-          <div class="card-header">
-            <h3>Add Passenger</h3>
-            <p>Inject user to current queue</p>
+      <!-- VIEW 1: SETUP & ACTION (The Entry Point) -->
+      <section id="view-setup" class="view-section active">
+        <header class="top-bar">
+          <div class="header-titles">
+            <span class="pulse-ring"></span>
+            <div><p class="subtitle">Section 1</p><h1>Operator & Trip Setup</h1></div>
           </div>
           
-          <form id="add-passenger-form">
-            <div class="input-luxury">
-              <input type="text" id="name" required placeholder=" ">
-              <label for="name">Passsenger Name</label>
-            </div>
-            
-            <div class="input-luxury">
-              <input type="text" id="phone" required placeholder=" ">
-              <label for="phone">Mobile Number (+91)</label>
-            </div>
+          <div class="hero-actions">
+            <!-- Priority 3: Action Section & Settings -->
+            <select id="action-language" class="glass-select">
+              <option value="en-IN">English (India)</option>
+              <option value="hi-IN">Hindi</option>
+              <option value="te-IN">Telugu</option>
+            </select>
+            <select id="action-mode" class="glass-select">
+              <option value="ai">AI Dynamic Engine</option>
+              <option value="pre">Pre-recorded (Polly)</option>
+            </select>
 
-            <div class="row-inputs">
-              <div class="input-luxury">
-                <input type="text" id="boarding" required placeholder=" ">
-                <label for="boarding">Boarding Stop</label>
-              </div>
-              <div class="input-luxury">
-                <input type="text" id="time" value="8:30 PM" required placeholder=" ">
-                <label for="time">Time</label>
-              </div>
-            </div>
-            
-            <button type="submit" class="btn-submit">
-              ADD TO ROSTER
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <button id="trigger-calls-btn" class="btn-premium hero-btn">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              NOTIFY MANIFEST
             </button>
-          </form>
+          </div>
+        </header>
+
+        <div class="bento-grid">
+          
+          <!-- Top Left: Trip Meta -->
+          <div class="glass-card" style="grid-column: span 1;">
+            <div class="card-header"><h3>Active Dispatch Vector</h3></div>
+            <div class="input-luxury"><input type="text" id="trip-op" value="KSRTC Travels" placeholder=" "><label>Operator ID</label></div>
+            <div class="input-luxury"><input type="text" id="trip-bus" value="KA-01-F-1234" placeholder=" "><label>Bus Number</label></div>
+            <div class="row-inputs">
+              <div class="input-luxury"><input type="text" id="trip-id" value="BLR-HYD-830" placeholder=" "><label>Journey ID</label></div>
+              <div class="input-luxury"><input type="text" id="trip-dep" value="20:30" placeholder=" "><label>Departure</label></div>
+            </div>
+            <button class="btn-secondary" style="margin-top:10px;">SAVE PRESET</button>
+          </div>
+
+          <!-- Top Right: Form & CSV Drop -->
+          <div class="glass-card" style="grid-column: span 1;">
+            <div class="card-header"><h3>Passenger Ingestion</h3></div>
+            
+            <div class="csv-upload-zone">
+              <svg width="24" height="24" fill="none" stroke="#666"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <span>Drag & Drop CSV/XLSX or <a href="#">Browse</a></span>
+            </div>
+            <h4 style="text-align:center; color:#555; margin:15px 0;">— OR MANUAL ENTRY —</h4>
+
+            <form id="add-passenger-form">
+              <div class="row-inputs">
+                <div class="input-luxury"><input type="text" id="name" required placeholder=" "><label>Passsenger Name</label></div>
+                <div class="input-luxury"><input type="text" id="phone" value="+919110300509" required placeholder=" "><label>Mobile No.</label></div>
+              </div>
+              <div class="row-inputs">
+                <div class="input-luxury"><input type="text" id="boarding" value="Majestic" required placeholder=" "><label>Boarding Stop</label></div>
+                <div class="input-luxury"><input type="text" id="time" value="8:30 PM" required placeholder=" "><label>Time</label></div>
+              </div>
+              <button type="submit" class="btn-submit">ADD SINGLE RECORD</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: LIVE MONITORING -->
+      <section id="view-monitoring" class="view-section hidden">
+        <header class="top-bar">
+          <div class="header-titles">
+            <div><p class="subtitle">Section 4</p><h1>Live Monitoring</h1></div>
+          </div>
+        </header>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Total Dispatched</span>
+            <div class="stat-val" id="stat-total">0</div>
+          </div>
+          <div class="stat-card success-stat">
+            <span class="stat-title">Connected</span>
+            <div class="stat-val" id="stat-good">0</div>
+          </div>
+          <div class="stat-card fail-stat">
+            <span class="stat-title">Failed / Busy</span>
+            <div class="stat-val" id="stat-fail">0</div>
+          </div>
+          <div class="stat-card warn-stat">
+            <span class="stat-title">Retries Active</span>
+            <div class="stat-val" id="stat-retry">0</div>
+          </div>
         </div>
 
-        <!-- Right: Real-time Table -->
-        <div class="glass-card list-card">
+        <div class="glass-card list-card" style="margin-top: 2rem;">
           <div class="card-header flex-between">
-            <div>
-              <h3>Manifest</h3>
-              <p>Real-time queue tracking</p>
-            </div>
-            <div class="count-badge">
-              <span id="passenger-count">0</span> Pax
-            </div>
+            <h3>Active Manifest Stream</h3>
+            <div class="count-badge"><span id="passenger-count">0</span> Total</div>
           </div>
-          
-          <div class="table-container">
+          <div class="table-container fade-in">
             <table id="passengers-table">
               <thead>
                 <tr>
-                  <th>Passenger</th>
-                  <th>Location</th>
-                  <th>Time</th>
-                  <th>AI Status</th>
+                  <th>Identity</th>
+                  <th>Boarding Logic</th>
+                  <th>Telephony Status</th>
+                  <th>Attempts</th>
                 </tr>
               </thead>
               <tbody id="passengers-body">
-                <!-- Skeleton loader rows before data arrives -->
-                <tr class="skeleton-row"><td colspan="4"><div class="skeleton"></div></td></tr>
                 <tr class="skeleton-row"><td colspan="4"><div class="skeleton"></div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
       </section>
+
+      <!-- VIEW 3: AI INTERACTIONS -->
+      <section id="view-ai" class="view-section hidden">
+        <header class="top-bar">
+          <div class="header-titles">
+            <div><p class="subtitle">Section 6</p><h1>Groq AI Transcripts</h1></div>
+          </div>
+        </header>
+        
+        <div class="glass-card">
+          <div class="card-header">
+            <h3>Real-time Semantic Extraction</h3>
+            <p>Live audio-to-text transcripts matched against AI logic.</p>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Passenger</th>
+                  <th>Extracted Intent (User)</th>
+                  <th>LLM Generation (Bot)</th>
+                  <th>Sentiment</th>
+                </tr>
+              </thead>
+              <tbody id="ai-logs-body">
+                <tr>
+                  <td style="color:#fff;">Jaggu</td>
+                  <td>"I just got off the metro, am I late?"</td>
+                  <td style="color:#00E676;">"No worries, your bus is at 8:30 PM. You have time."</td>
+                  <td><div class="status-pill status-completed">Positive</div></td>
+                </tr>
+                <tr>
+                  <td style="color:#fff;">Rahul</td>
+                  <td>"Cancel my seat."</td>
+                  <td style="color:#00E676;">"I cannot cancel trips. Please contact AbhiBus Support."</td>
+                  <td><div class="status-pill status-failed">Frustrated</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: ANALYTICS & SETTINGS -->
+      <section id="view-analytics" class="view-section hidden">
+        <header class="top-bar">
+          <div class="header-titles">
+            <div><p class="subtitle">Section 5</p><h1>System Analytics</h1></div>
+          </div>
+          <button class="btn-secondary" style="width: auto;">EXPORT CSV</button>
+        </header>
+
+        <div class="glass-card" style="display:flex; justify-content:center; align-items:center; height:400px;">
+          <h2 style="color:#444;">📊 Interactive Graphs Comming Soon.</h2>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view-section hidden">
+        <header class="top-bar">
+          <div class="header-titles">
+            <div><p class="subtitle">Section 7</p><h1>Environment Config</h1></div>
+          </div>
+        </header>
+        <div class="glass-card">
+          <div class="input-luxury"><input type="text" value="gsk_******************" disabled><label>Groq LLM Key</label></div>
+          <div class="input-luxury"><input type="text" value="Polly.Aditi" disabled><label>Default TTS Voice Engine</label></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
