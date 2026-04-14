@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BoardPing | AI Dispatch</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Ultra-premium Modern Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  
+  <!-- Subtle animated ambient background -->
+  <div class="ambient-glow"></div>
+
+  <div class="dashboard-wrapper">
+    <!-- Sleek Vertical Dock -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-btn active" title="Active Dispatch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        </button>
+        <button class="nav-btn" title="AI Analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </button>
+      </nav>
+      <div class="user-avatar">
+        <img src="https://i.pravatar.cc/100?img=33" alt="User">
+      </div>
+    </aside>
+
+    <main class="main-content">
+      
+      <header class="top-bar">
+        <div class="header-titles">
+          <span class="pulse-ring"></span>
+          <div>
+            <p class="subtitle">Live Dispatch Engine</p>
+            <h1>BLR &rarr; HYD <span>(20:30)</span></h1>
+          </div>
+        </div>
+        
+        <button id="trigger-calls-btn" class="btn-premium">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+          INITIATE AI BOARDING
+        </button>
+      </header>
+
+      <section class="bento-grid">
+        
+        <!-- Left: Form -->
+        <div class="glass-card add-card">
+          <div class="card-header">
+            <h3>Add Passenger</h3>
+            <p>Inject user to current queue</p>
+          </div>
+          
+          <form id="add-passenger-form">
+            <div class="input-luxury">
+              <input type="text" id="name" required placeholder=" ">
+              <label for="name">Passsenger Name</label>
+            </div>
+            
+            <div class="input-luxury">
+              <input type="text" id="phone" required placeholder=" ">
+              <label for="phone">Mobile Number (+91)</label>
+            </div>
+
+            <div class="row-inputs">
+              <div class="input-luxury">
+                <input type="text" id="boarding" required placeholder=" ">
+                <label for="boarding">Boarding Stop</label>
+              </div>
+              <div class="input-luxury">
+                <input type="text" id="time" value="8:30 PM" required placeholder=" ">
+                <label for="time">Time</label>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+              ADD TO ROSTER
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Real-time Table -->
+        <div class="glass-card list-card">
+          <div class="card-header flex-between">
+            <div>
+              <h3>Manifest</h3>
+              <p>Real-time queue tracking</p>
+            </div>
+            <div class="count-badge">
+              <span id="passenger-count">0</span> Pax
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <table id="passengers-table">
+              <thead>
+                <tr>
+                  <th>Passenger</th>
+                  <th>Location</th>
+                  <th>Time</th>
+                  <th>AI Status</th>
+                </tr>
+              </thead>
+              <tbody id="passengers-body">
+                <!-- Skeleton loader rows before data arrives -->
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton"></div></td></tr>
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
