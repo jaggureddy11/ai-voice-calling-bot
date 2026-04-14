@@ -37,17 +37,80 @@ const notifyJourney = async (req, res) => {
   }
 };
 
-const handleIncomingVoice = (req, res) => {
-  res.set('Content-Type', 'text/xml');
+const twilio = require('twilio');
+const OpenAI = require('openai');
 
-  res.send(`
-    <Response>
-      <Say>Hello Jaggu! Your AI voice bot is working!</Say>
-    </Response>
-  `);
+const handleIncomingVoice = (req, res) => {
+  const twimlObj = new twilio.twiml.VoiceResponse();
+  const gather = twimlObj.gather({
+    input: 'speech',
+    action: '/api/calls/voice/respond',
+    speechTimeout: 'auto',
+    language: 'en-IN'
+  });
+  
+  gather.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 
+    'Namaste! Welcome to AbhiBus assistant. How can I help you today?'
+  );
+
+  res.set('Content-Type', 'text/xml');
+  res.send(twimlObj.toString());
+};
+
+const handleVoiceRespond = async (req, res) => {
+  const userSpeech = req.body.SpeechResult;
+  const twimlObj = new twilio.twiml.VoiceResponse();
+
+  if (!userSpeech) {
+    twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'I did not catch that. Could you please repeat?');
+    twimlObj.redirect('/api/calls/voice'); // Send them back to the start
+    res.set('Content-Type', 'text/xml');
+    return res.send(twimlObj.toString());
+  }
+
+  console.log(`[Caller Said]: ${userSpeech}`);
+
+  try {
+    const openai = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: 'gemma2-9b-it', // or llama3-8b-8192, mixtral-8x7b-32768
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are a helpful and polite bus booking assistant for AbhiBus in India. Keep your answers extremely short (1 to 2 sentences max) so that the phone caller does not get bored. You are speaking over the phone, so avoid emojis or special characters.' 
+        },
+        { role: 'user', content: userSpeech }
+      ]
+    });
+
+    const aiResponse = completion.choices[0].message.content;
+    console.log(`[AI Said]: ${aiResponse}`);
+
+    const gather = twimlObj.gather({
+      input: 'speech',
+      action: '/api/calls/voice/respond',
+      speechTimeout: 'auto',
+      language: 'en-IN'
+    });
+    
+    gather.say({ voice: 'Polly.Aditi', language: 'en-IN' }, aiResponse);
+
+    res.set('Content-Type', 'text/xml');
+    res.send(twimlObj.toString());
+  } catch (error) {
+    console.error('Groq Error:', error);
+    twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'Sorry, my system is currently down. Please try again later.');
+    res.set('Content-Type', 'text/xml');
+    res.send(twimlObj.toString());
+  }
 };
 
 module.exports = {
   notifyJourney,
-  handleIncomingVoice
+  handleIncomingVoice,
+  handleVoiceRespond
 };
