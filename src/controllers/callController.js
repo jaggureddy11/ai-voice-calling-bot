@@ -37,6 +37,17 @@ const notifyJourney = async (req, res) => {
   }
 };
 
+const handleIncomingVoice = (req, res) => {
+  res.set('Content-Type', 'text/xml');
+
+  res.send(`
+    <Response>
+      <Say>Hello Jaggu! Your AI voice bot is working!</Say>
+    </Response>
+  `);
+};
+
 module.exports = {
-  notifyJourney
+  notifyJourney,
+  handleIncomingVoice
 };
