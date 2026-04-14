@@ -1,34 +1,58 @@
+const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
 
 const notifyJourney = async (req, res) => {
   try {
-    const { journeyId, passengers } = req.body;
+    // Allows passing journeyId in body or query/params flexibly
+    const journeyId = req.body.journeyId || req.params.journeyId;
 
-    if (!journeyId || !passengers || !Array.isArray(passengers)) {
-      return res.status(400).json({ error: 'Invalid payload. journeyId and an array of passengers are required.' });
+    if (!journeyId) {
+      return res.status(400).json({ error: 'journeyId is required.' });
     }
 
-    console.log(`Received trigger to notify ${passengers.length} passengers for journey ${journeyId}.`);
+    console.log(`Fetching passengers for journey ${journeyId} from Supabase...`);
 
-    // DND scrubbing checks can happen here before pushing to queue,
-    // or rate-limiting per journeyId
+    // Fetch passengers
+    const { data: passengers, error: fetchError } = await supabase
+      .from('passengers')
+      .select('*')
+      .eq('journey_id', journeyId);
+
+    if (fetchError || !passengers || passengers.length === 0) {
+      return res.status(404).json({ error: 'No passengers found for this journey.' });
+    }
+
+    let queuedCount = 0;
 
     for (const passenger of passengers) {
       if (!passenger.phone) continue;
       
-      // Inject journey context into passenger details
+      // Create a Call Log in Supabase FIRST to mark as initiated
+      const { data: callLog, error: logError } = await supabase
+        .from('call_logs')
+        .insert([{ passenger_id: passenger.id, status: 'initiated' }])
+        .select()
+        .single();
+        
+      if (logError) {
+          console.error('Error creating call log:', logError);
+          continue;
+      }
+
+      // Inject callLogId so the worker can update it later
       const passengerPayload = {
         ...passenger,
-        journeyId
+        callLogId: callLog.id 
       };
 
       // Push passenger task to job queue
       await addCallToQueue(passengerPayload);
+      queuedCount++;
     }
 
     res.status(200).json({
       success: true,
-      message: `Successfully queued calls for ${passengers.length} passengers on journey ${journeyId}.`
+      message: `Successfully fetched and queued calls for ${queuedCount} passengers on journey ${journeyId}.`
     });
 
   } catch (error) {
