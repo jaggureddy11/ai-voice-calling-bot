@@ -74,13 +74,32 @@
           <!-- Top Left: Trip Meta -->
           <div class="glass-card" style="grid-column: span 1;">
             <div class="card-header"><h3>Active Dispatch Vector</h3></div>
-            <div class="input-luxury"><input type="text" id="trip-op" value="KSRTC Travels" placeholder=" "><label>Operator ID</label></div>
-            <div class="input-luxury"><input type="text" id="trip-bus" value="KA-01-F-1234" placeholder=" "><label>Bus Number</label></div>
-            <div class="row-inputs">
-              <div class="input-luxury"><input type="text" id="trip-id" value="BLR-HYD-830" placeholder=" "><label>Journey ID</label></div>
-              <div class="input-luxury"><input type="text" id="trip-dep" value="20:30" placeholder=" "><label>Departure</label></div>
+            
+            <div class="input-luxury has-select">
+              <select id="trip-op" required>
+                <option value="" disabled selected></option>
+                <option value="VRL">VRL Logistics</option>
+                <option value="KSRTC">Karnataka State RTC</option>
+                <option value="SRS">SRS Travels</option>
+                <option value="INTR">IntrCity SmartBus</option>
+              </select>
+              <label>Select Transport Operator</label>
             </div>
-            <button class="btn-secondary" style="margin-top:10px;">SAVE PRESET</button>
+
+            <div class="input-luxury has-select">
+              <select id="trip-bus" required disabled>
+                <option value="" disabled selected></option>
+                <!-- Dyamically filled by JS -->
+              </select>
+              <label>Select Fleet Vehicle</label>
+            </div>
+
+            <div class="row-inputs">
+              <div class="input-luxury"><input type="text" id="trip-id" value="BLR-HYD-830" placeholder=" " required><label>Journey ID</label></div>
+              <div class="input-luxury"><input type="text" id="trip-dep" value="20:30" placeholder=" " required><label>Departure</label></div>
+            </div>
+            
+            <button id="save-preset-btn" class="btn-secondary" style="margin-top:10px;">LOAD MANIFEST</button>
           </div>
 
           <!-- Top Right: Form & CSV Drop -->

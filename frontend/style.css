@@ -74,10 +74,13 @@ p { font-size: 0.9rem; color: #777; font-weight: 300; }
 
 /* Forms */
 .input-luxury { position: relative; margin-bottom: 1.5rem; }
-.input-luxury input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #333; color: #FFF; padding: 1rem 0; font-size: 1rem; transition: 0.3s; }
-.input-luxury input:focus { border-bottom-color: #FFF; outline: none; }
+.input-luxury input, .input-luxury select { width: 100%; background: transparent; border: none; border-bottom: 1px solid #333; color: #FFF; padding: 1rem 0; font-size: 1rem; transition: 0.3s; outline: none; }
+.input-luxury select { -webkit-appearance: none; appearance: none; cursor: pointer; border-radius: 0; }
+.input-luxury select option { background-color: #111; color: #FFF; }
+.input-luxury input:focus, .input-luxury select:focus, .input-luxury select:valid { border-bottom-color: #FFF; }
 .input-luxury label { position: absolute; top: 1rem; left: 0; color: #666; font-size: 1rem; pointer-events: none; transition: 0.3s; }
-.input-luxury input:focus ~ label, .input-luxury input:not(:placeholder-shown) ~ label { top: -10px; font-size: 0.75rem; color: #AAA; letter-spacing: 0.05em; text-transform: uppercase; }
+.input-luxury input:focus ~ label, .input-luxury input:not(:placeholder-shown) ~ label,
+.input-luxury select:focus ~ label, .input-luxury select:valid ~ label { top: -10px; font-size: 0.75rem; color: #AAA; letter-spacing: 0.05em; text-transform: uppercase; }
 .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .btn-submit { width: 100%; background: transparent; color: #FFF; border: 1px solid #444; padding: 1.2rem; border-radius: 16px; margin-top: 1rem; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; }
 .btn-submit:hover { border-color: #FFF; background: rgba(255,255,255,0.05); }

@@ -168,5 +168,41 @@ supabase.channel('public:call_logs')
     fetchPassengers();
   }).subscribe();
 
+// Dynamic SaaS Interaction Logic
+const fleetData = {
+  'VRL': ['KA-25-A-1111 (Volvo 9400)', 'KA-25-B-2222 (Sleeper)'],
+  'KSRTC': ['KA-01-F-1234 (Airavat)', 'KA-57-F-9999 (Club Class)'],
+  'SRS': ['KA-02-C-5555 (Scania)', 'KA-02-D-6666 (Sleeper)'],
+  'INTR': ['HR-38-V-8888 (SmartBus)', 'DL-01-Z-0000 (SmartBus)']
+};
+
+const opSelect = document.getElementById('trip-op');
+const busSelect = document.getElementById('trip-bus');
+
+opSelect.addEventListener('change', (e) => {
+  const op = e.target.value;
+  const fleets = fleetData[op] || [];
+  
+  busSelect.innerHTML = '<option value="" disabled selected></option>';
+  fleets.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    busSelect.appendChild(opt);
+  });
+  
+  busSelect.disabled = false;
+  
+  // Auto Generate Journey ID hash
+  document.getElementById('trip-id').value = `${op}-${Math.floor(Math.random() * 900) + 100}-DYN`;
+  document.getElementById('trip-dep').value = '22:00';
+});
+
+document.getElementById('save-preset-btn').addEventListener('click', () => {
+  if (!opSelect.value || !busSelect.value) return showToast('Please select Operator and Fleet first!');
+  fetchPassengers();
+  showToast('Manifest Synced with Database');
+});
+
 // Load Init
 fetchPassengers();
