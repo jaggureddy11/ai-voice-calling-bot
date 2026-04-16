@@ -1,345 +1,418 @@
-// DB Initialization
-const SUPABASE_URL = 'https://iqkytbbyucvaddxcehaw.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_bknGbF05qTEDJLrwU9Ze-Q_g_AFmJvU';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// --- DATA MOCKUPS ---
+const operators = [
+    { id: 'abhibus', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+    { id: 'redbus', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+    { id: 'cleartrip', name: 'Cleartrip', tag: 'Premium', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6a/db/5f/6adb5f7d-b581-202b-2e95-5b0b79e3cc91/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg' },
+    { id: 'goibibo', name: 'Goibibo', tag: 'Popular', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/22/08/9c/22089c0f-7ae0-fc05-85fc-f3308649c21d/appIconSet-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg' }
+];
 
-// State
-let JOURNEY_ID = document.getElementById('trip-id').value;
-let passengers = [];
+const agencies = [
+    { id: 'vrl', name: 'VRL Travels', routeCount: 145, rating: '4.8', opId: 'abhibus' },
+    { id: 'srs', name: 'SRS Travels', routeCount: 89, rating: '4.5', opId: 'abhibus' },
+    { id: 'laars', name: "Laar's Travels", routeCount: 34, rating: '4.9', opId: 'abhibus' },
+    { id: 'kukeshri', name: 'Kukeshri Travels', routeCount: 56, rating: '4.2', opId: 'redbus' },
+    { id: 'nagashree', name: 'Nagashree Travels', routeCount: 42, rating: '4.6', opId: 'redbus' }
+];
 
-// DOM Mounts
-const passengersBody = document.getElementById('passengers-body');
-const passengerCount = document.getElementById('passenger-count');
-const addForm = document.getElementById('add-passenger-form');
-const triggerBtn = document.getElementById('trigger-calls-btn');
-const toast = document.getElementById('toast');
-const navBtns = document.querySelectorAll('.nav-btn');
-const views = document.querySelectorAll('.view-section');
-const aiLogsBody = document.getElementById('ai-logs-body');
-const unreachableBody = document.getElementById('unreachable-body');
-const unreachableSection = document.getElementById('unreachable-section');
+const buses = [
+    { id: 'bus1', number: 'KA 01 AB 1234', agencyId: 'vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
+    { id: 'bus2', number: 'KA 04 VTR 5566', agencyId: 'vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' },
+    { id: 'bus3', number: 'MH 12 XY 9988', agencyId: 'vrl', route: 'MUM → GOA', time: '18:00', status: 'completed' },
+];
 
-// Navigation Logic
-navBtns.forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    navBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const targetId = btn.getAttribute('data-target');
-    views.forEach(v => {
-      v.classList.remove('active');
-      setTimeout(() => { if(!v.classList.contains('active')) v.classList.add('hidden') }, 100);
+let passengers = [
+    { id: 'p1', name: 'Jaggu Reddy', phone: '+91 9876543210', pickup: 'Majestic', seat: 'L4', boarded: false, callStatus: 'pending' },
+    { id: 'p2', name: 'Ankita Sharma', phone: '+91 9988776655', pickup: 'Madiwala', seat: 'U2', boarded: true, callStatus: 'success' },
+    { id: 'p3', name: 'Rahul Verma', phone: '+91 8877665544', pickup: 'Silk Board', seat: 'L1', boarded: false, callStatus: 'failed' }
+];
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Landing Screen Logic
+    const enterBtn = document.getElementById('enter-btn');
+    if(enterBtn) {
+        enterBtn.addEventListener('click', () => {
+            const loader = document.querySelector('.loader-bar');
+            if (loader) loader.style.width = '100%';
+            
+            setTimeout(() => {
+                document.getElementById('landing-screen').classList.add('fade-out');
+                setTimeout(() => {
+                    document.getElementById('landing-screen').style.display = 'none';
+                    document.getElementById('app-container').classList.remove('hidden');
+                    // slight delay for animation
+                    setTimeout(() => {
+                        document.getElementById('app-container').classList.add('visible');
+                        renderOperators();
+                        initChart();
+                    }, 50);
+                }, 800);
+            }, loader ? 600 : 0);
+        });
+    }
+
+    // 2. Sidebar Navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Update active state
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const target = btn.getAttribute('data-target');
+            if(target) {
+                // Determine title mapped
+                let title = 'Dashboard';
+                let breadcrumbs = 'Home';
+                if(target === 'view-operators') { title = "Select Operator"; breadcrumbs = "Home / Operators"; }
+                if(target === 'view-summary') { title = "System Summary"; breadcrumbs = "Home / Analytics"; }
+                if(target === 'view-ai-chat') { title = "AI Assistant"; breadcrumbs = "Home / AI Agent"; }
+                
+                navigate(target, title, breadcrumbs);
+            }
+        });
     });
-    
-    const view = document.getElementById(targetId);
-    view.classList.remove('hidden');
-    // Using slight timeout allowing display:block to settle before opacity animates via CSS
-    setTimeout(() => view.classList.add('active'), 10);
-  });
+
+    // Handle Chat input
+    const chatInput = document.getElementById('chat-input');
+    if(chatInput) {
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendChat();
+        });
+    }
 });
 
-// Toast Util
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+// --- NAVIGATION LOGIC ---
+function navigate(viewId, title, breadcrumbs) {
+    // Hide all views
+    document.querySelectorAll('.view-section').forEach(v => {
+        v.classList.remove('active');
+    });
+    // Show target
+    const target = document.getElementById(viewId);
+    if(target) target.classList.add('active');
+    
+    // Update Header
+    document.getElementById('header-title').innerText = title;
+    document.getElementById('header-breadcrumbs').innerText = breadcrumbs;
 }
 
-let dashboardChart = null;
+// --- RENDERERS ---
 
-// Initialize Chart
+function renderOperators() {
+    const grid = document.getElementById('operators-grid');
+    grid.innerHTML = '';
+    
+    operators.forEach(op => {
+        const card = document.createElement('div');
+        card.className = 'premium-panel operator-card';
+        card.onclick = () => selectOperator(op);
+        
+        card.innerHTML = `
+            <div class="op-logo-wrap"><img src="${op.icon}" alt="${op.name}"></div>
+            <h4 class="op-title">${op.name}</h4>
+            <p class="op-meta">${op.tag}</p>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function selectOperator(op) {
+    // Filter agencies
+    const opAgencies = agencies.filter(a => a.opId === op.id || a.opId === 'abhibus'); // showing fallback for UI population
+    const grid = document.getElementById('agencies-grid');
+    grid.innerHTML = '';
+    
+    document.getElementById('agency-provider-title').innerText = `${op.name} Partners`;
+    
+    opAgencies.forEach(ag => {
+         const card = document.createElement('div');
+         card.className = 'premium-panel agency-card';
+         card.onclick = () => selectAgency(ag);
+         
+         card.innerHTML = `
+            <div class="ag-icon"><i class="ri-building-4-line"></i></div>
+            <div class="ag-info">
+                <h4>${ag.name}</h4>
+                <p>${ag.routeCount} Active Routes • ⭐ ${ag.rating}</p>
+            </div>
+         `;
+         grid.appendChild(card);
+    });
+    
+    navigate('view-agencies', `Select Agency`, `Home / ${op.name} / Agencies`);
+}
+
+function selectAgency(ag) {
+    const grid = document.getElementById('buses-list');
+    grid.innerHTML = '';
+    document.getElementById('bus-agency-title').innerText = `${ag.name} Fleet`;
+    
+    buses.forEach(b => {
+        const item = document.createElement('div');
+        item.className = 'premium-panel bus-list-item';
+        item.onclick = () => selectBus(b);
+        
+        let statusClass = b.status === 'upcoming' ? 'status-upcoming' : b.status === 'boarding' ? 'status-boarding' : 'status-completed';
+        let statusText = b.status.toUpperCase();
+
+        item.innerHTML = `
+            <div class="bus-left">
+                <div class="bus-time">${b.time}</div>
+                <div class="bus-details">
+                    <h4>${b.number}</h4>
+                    <p>${b.route}</p>
+                </div>
+            </div>
+            <div class="bus-status ${statusClass}">${statusText}</div>
+        `;
+        grid.appendChild(item);
+    });
+    
+    navigate('view-buses', `Active Fleet`, `Home / Agencies / ${ag.name}`);
+}
+
+let activeBus = null;
+function selectBus(bus) {
+    activeBus = bus;
+    document.getElementById('dash-bus-no').innerText = bus.number;
+    document.getElementById('dash-route').innerHTML = `${bus.route} | <span id="dash-time">${bus.time}</span>`;
+    
+    renderPassengers();
+    navigate('view-bus-dashboard', `Fleet Control`, `Home / Buses / ${bus.number}`);
+}
+
+function renderPassengers() {
+    const tbody = document.getElementById('passengers-tbody');
+    tbody.innerHTML = '';
+    
+    passengers.forEach(p => {
+        const tr = document.createElement('tr');
+        
+        // Call status badge
+        let callBadge = '';
+        if(p.callStatus === 'success') callBadge = `<span class="badge-pill bg-success">Connected</span>`;
+        if(p.callStatus === 'pending') callBadge = `<span class="badge-pill bg-info">Pending</span>`;
+        if(p.callStatus === 'failed')  callBadge = `<span class="badge-pill bg-danger">Failed</span>`;
+        
+        // Boarding toggle
+        let boardToggle = p.boarded ? 
+            `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-success" style="cursor:pointer; border:none;">Boarded</button>` : 
+            `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-warning" style="cursor:pointer; border:none;">Waiting</button>`;
+
+        tr.innerHTML = `
+            <td>
+                <span class="p-name">${p.name} (Seat: ${p.seat})</span>
+                <span class="p-contact">${p.phone}</span>
+            </td>
+            <td>${p.pickup}</td>
+            <td>${boardToggle}</td>
+            <td id="call-status-${p.id}">${callBadge}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="action-btn call" onclick="initiateSingleCall('${p.id}', this)" title="Call Passenger"><i class="ri-phone-fill"></i></button>
+                    <button class="action-btn msg" title="Send SMS"><i class="ri-message-3-fill"></i></button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// --- ACTIONS & INTERACTIONS ---
+
+function toggleBoard(id) {
+    const p = passengers.find(x => x.id === id);
+    if(p) {
+        p.boarded = !p.boarded;
+        renderPassengers();
+        showToast(`Status updated for ${p.name}`, 'success');
+    }
+}
+
+function initiateSingleCall(id, btnElement) {
+    const p = passengers.find(x => x.id === id);
+    if(!p) return;
+    
+    // UI Update
+    btnElement.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
+    p.callStatus = 'pending';
+    renderPassengers();
+    showToast(`Calling ${p.name}...`, 'info');
+    
+    // Simulate call
+    setTimeout(() => {
+        p.callStatus = Math.random() > 0.3 ? 'success' : 'failed';
+        renderPassengers();
+        
+        if(p.callStatus === 'success') {
+            showToast(`${p.name} confirmed boarding.`, 'success');
+        } else {
+            showToast(`${p.name} did not answer.`, 'danger');
+        }
+    }, 2500);
+}
+
+function triggerAutoCall() {
+    showToast(`Initiating smart wave calls to all waiting passengers...`, 'info');
+    
+    // Simulate batch processing
+    passengers.forEach((p, idx) => {
+        if(!p.boarded) {
+            setTimeout(() => {
+                p.callStatus = 'pending';
+                renderPassengers();
+                setTimeout(() => {
+                    p.callStatus = Math.random() > 0.2 ? 'success' : 'failed';
+                    renderPassengers();
+                }, 2000 + (Math.random() * 2000));
+            }, idx * 800);
+        }
+    });
+}
+
+// --- MODALS ---
+
+function openAddPassengerModal() {
+    document.getElementById('modal-backdrop').classList.add('active');
+    document.getElementById('add-passenger-modal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    document.getElementById('modal-backdrop').classList.remove('active');
+}
+
+function savePassenger() {
+    const name = document.getElementById('p-name').value;
+    const phone = document.getElementById('p-phone').value;
+    const pickup = document.getElementById('p-loc').value;
+    const seat = document.getElementById('p-seat').value;
+    
+    if(!name || !phone) return showToast("Name and Phone are required", "danger");
+    
+    passengers.push({
+        id: 'p' + Date.now(),
+        name, phone, pickup, seat,
+        boarded: false, callStatus: 'pending'
+    });
+    
+    closeModal('add-passenger-modal');
+    document.getElementById('passenger-form').reset();
+    renderPassengers();
+    showToast("Passenger added successfully.", "success");
+}
+
+function handleOCRUpload() {
+    showToast("Extracting data via AI OCR...", "info");
+    const spinnerHtml = `<div style="text-align:center; padding: 20px;"><i class="ri-loader-4-line ri-spin" style="font-size:30px; color: var(--primary)"></i></div>`;
+    const formHtml = document.getElementById('passenger-form').innerHTML;
+    
+    document.getElementById('passenger-form').innerHTML = spinnerHtml;
+    
+    setTimeout(() => {
+        document.getElementById('passenger-form').innerHTML = formHtml;
+        // Autofill simulated data
+        document.getElementById('p-name').value = "Meera Rajput";
+        document.getElementById('p-phone').value = "+91 8899889988";
+        document.getElementById('p-loc').value = "Koramangala";
+        document.getElementById('p-seat').value = "S12";
+        showToast("Data extracted successfully!", "success");
+    }, 2000);
+}
+
+// --- AI CHATBOT LOGIC ---
+
+function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if(!msg) return;
+    
+    appendChatMessage(msg, 'user-msg');
+    input.value = '';
+    
+    // Simulate AI thinking
+    setTimeout(() => {
+        let reply = "I'm analyzing the active manifests. How else can I help?";
+        const lMsg = msg.toLowerCase();
+        if(lMsg.includes('bus') && lMsg.includes('location')) {
+            reply = activeBus ? `The bus ${activeBus.number} is currently 15 mins away from next boarding point.` : "Please select a bus from the dashboard to track it.";
+        } else if(lMsg.includes('luggage')) {
+            reply = "Standard luggage policy allows up to 15kg per passenger and one standard cabin bag.";
+        } else if(lMsg.includes('late') || lMsg.includes('wait')) {
+            reply = "I can trigger an automated call to the driver to notify them. Should I proceed?";
+        }
+        
+        appendChatMessage(reply, 'ai-msg');
+    }, 1000);
+}
+
+function appendChatMessage(text, className) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `msg ${className}`;
+    div.innerHTML = `<div class="msg-bubble">${text}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+// --- UTILS ---
+
+function showToast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    let icon = 'ri-information-line';
+    if(type === 'success') { icon = 'ri-checkbox-circle-fill'; }
+    if(type === 'danger')  { icon = 'ri-error-warning-fill'; }
+    
+    toast.innerHTML = `<i class="${icon}"></i> ${msg}`;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// --- CHART.JS SUMMARY ---
+
 function initChart() {
-  const ctx = document.getElementById('analyticsChart').getContext('2d');
-  dashboardChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Connected', 'Failed', 'Pending/Retrying'],
-      datasets: [{
-        data: [0, 0, 0],
-        backgroundColor: ['rgba(0, 230, 118, 0.8)', 'rgba(248, 113, 113, 0.8)', 'rgba(255, 255, 255, 0.2)'],
-        borderColor: ['#00E676', '#F87171', '#555'],
-        borderWidth: 1,
-        hoverOffset: 10
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { color: '#E2E8F0', font: { family: 'Outfit', size: 14 } } }
-      }
-    }
-  });
-}
-
-// Update Global KPI Trackers
-function updateStats() {
-  let success = 0, failed = 0, active = 0;
-  passengers.forEach(p => {
-    if(!p.call_logs || p.call_logs.length === 0) {
-      active++;
-      return;
-    }
-    const s = p.call_logs[0].status;
-    if(s === 'completed') success++;
-    else if(['failed', 'busy', 'no-answer', 'canceled'].includes(s)) failed++;
-    else if(['initiated', 'ringing', 'queued', 'in-progress'].includes(s)) active++;
-  });
-  
-  document.getElementById('stat-total').textContent = passengers.length;
-  document.getElementById('stat-good').textContent = success;
-  document.getElementById('stat-fail').textContent = failed;
-  document.getElementById('stat-retry').textContent = active;
-
-  // Update live chart
-  if (dashboardChart) {
-    dashboardChart.data.datasets[0].data = [success, failed, active];
-    dashboardChart.update();
-  }
-}
-
-// Network Fetch
-async function fetchPassengers() {
-  JOURNEY_ID = document.getElementById('trip-id').value;
-  try {
-    const response = await fetch(`http://localhost:3000/api/calls/passengers/${JOURNEY_ID}`);
-    const data = await response.json();
-    if (response.ok) {
-      passengers = data || [];
-      passengerCount.textContent = passengers.length;
-      updateStats();
-      renderTable();
-    }
-  } catch (error) { console.error('Network Data Error:', error); }
-}
-
-// Fetch AI Interaction Logs
-async function fetchAILogs() {
-  try {
-    const response = await fetch('http://localhost:3000/api/calls/ai-logs');
-    const data = await response.json();
-    if (response.ok) {
-      renderAITable(data);
-    }
-  } catch (error) { console.error('AI Log Fetch Error:', error); }
-}
-
-// Table Re-render
-function renderTable() {
-  passengersBody.innerHTML = '';
-  if (passengers.length === 0) {
-    passengersBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #555; padding:2rem;">No passengers ingested into active manifest. Add them using the Action Panel.</td></tr>`;
-    return;
-  }
-  
-  passengers.forEach(p => {
-    let statusClass = 'pending';
-    let statusText = 'Pending Initiation';
-    let attempts = 0;
+    const ctx = document.getElementById('summaryChart');
+    if(!ctx) return;
     
-    if (p.call_logs && p.call_logs.length > 0) {
-      const latestLog = p.call_logs[0];
-      statusText = latestLog.status.replace('-', ' ').toUpperCase();
-      statusClass = latestLog.status;
-      attempts = latestLog.attempt_count || 1;
-    }
-
-    const tr = document.createElement('tr');
-    const lateBadge = latestLog && latestLog.is_flagged ? `<span class="status-pill status-failed" style="margin-left: 8px; font-size: 0.7rem; padding: 2px 8px;">LATE ALERT</span>` : '';
-
-    tr.innerHTML = `
-      <td><div class="info-stack"><span>${p.name}${lateBadge}</span><span class="info-sub">${p.phone}</span></div></td>
-      <td><div class="info-stack"><span>${p.boarding_point}</span><span class="info-sub">${p.time}</span></div></td>
-      <td><div class="status-pill status-${statusClass.toLowerCase()}">${statusText}</div></td>
-      <td><span style="color:#666; font-weight:700;">${attempts > 0 ? attempts : '-'} / 3</span></td>
-    `;
-    passengersBody.appendChild(tr);
-  });
-
-  renderUnreachable();
-}
-
-// Unreachable logic
-function renderUnreachable() {
-  const unreachable = passengers.filter(p => {
-    if (!p.call_logs || p.call_logs.length === 0) return false;
-    const s = p.call_logs[0].status;
-    return ['failed', 'busy', 'no-answer'].includes(s);
-  });
-
-  unreachableBody.innerHTML = '';
-  if (unreachable.length === 0) {
-    unreachableSection.classList.add('hidden');
-    return;
-  }
-
-  unreachableSection.classList.remove('hidden');
-  unreachable.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><div class="info-stack"><span>${p.name}</span><span class="info-sub">${p.phone}</span></div></td>
-      <td><div class="status-pill status-${p.call_logs[0].status.toLowerCase()}">${p.call_logs[0].status.toUpperCase()}</div></td>
-      <td>
-        <button class="btn-submit" style="padding: 0.5rem; margin:0;" onclick="sendSMS('${p.id}')">
-          SEND SMS FALLBACK
-        </button>
-      </td>
-    `;
-    unreachableBody.appendChild(tr);
-  });
-}
-
-async function sendSMS(passengerId) {
-  showToast('Sending SMS fallback...');
-  try {
-    const response = await fetch('http://localhost:3000/api/calls/sms-fallback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ passengerId })
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Passengers Boarded',
+                data: [120, 150, 140, 180, 220, 250, 200],
+                borderColor: '#ffffff',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }, {
+                label: 'Automated Calls Made',
+                data: [115, 140, 135, 175, 215, 245, 190],
+                borderColor: '#666666',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#ffffff', font: { family: 'Inter', size: 12 } } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#888888', font: { family: 'Inter' } } },
+                x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#888888', font: { family: 'Inter' } } }
+            }
+        }
     });
-    if (response.ok) {
-      showToast('SMS Sent Successfully!');
-      fetchPassengers();
-    }
-  } catch (err) { showToast('SMS dispatch failed.'); }
 }
-
-// AI Table Re-render
-function renderAITable(logs) {
-  aiLogsBody.innerHTML = '';
-  if (!logs || logs.length === 0) {
-    aiLogsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #555; padding:2rem;">No AI transcripts recorded yet. Trigger a call to see live logic.</td></tr>`;
-    return;
-  }
-
-  logs.forEach(log => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="color:#fff;">${log.passenger_name || 'Anonymous'}</td>
-      <td>"${log.user_speech}"</td>
-      <td style="color:#00E676;">"${log.bot_response}"</td>
-      <td><div class="status-pill status-${log.sentiment === 'Active' ? 'completed' : 'failed'}">${log.sentiment}</div></td>
-    `;
-    aiLogsBody.appendChild(tr);
-  });
-}
-
-// CSV Drag and Drop Visuals
-const csvZone = document.querySelector('.csv-upload-zone');
-csvZone.addEventListener('dragover', (e) => { e.preventDefault(); csvZone.style.borderColor = '#00E676'; csvZone.style.background = 'rgba(0,230,118,0.05)'; });
-csvZone.addEventListener('dragleave', () => { csvZone.style.borderColor = 'rgba(255,255,255,0.1)'; csvZone.style.background = 'transparent'; });
-csvZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  csvZone.style.borderColor = 'rgba(255,255,255,0.1)'; 
-  csvZone.style.background = 'transparent';
-  showToast('CSV Parsing Simulation Enabled! Routing to batch process.');
-});
-
-// Handle Form Submission
-addForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  JOURNEY_ID = document.getElementById('trip-id').value;
-  
-  const payload = {
-    journey_id: JOURNEY_ID,
-    name: document.getElementById('name').value,
-    phone: document.getElementById('phone').value,
-    boarding_point: document.getElementById('boarding').value,
-    time: document.getElementById('time').value,
-    language: document.getElementById('action-language').value
-  };
-
-  const btn = addForm.querySelector('button');
-  btn.innerHTML = 'INGESTING...';
-  btn.disabled = true;
-
-  try {
-    const response = await fetch('http://localhost:3000/api/calls/passengers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (response.ok) {
-      showToast('Passenger successfully ingested!');
-      fetchPassengers();
-      document.getElementById('name').value = '';
-    } else { throw new Error('Query block'); }
-  } catch (error) { showToast('Database constraint check failed. Operator/Trip missing?'); } 
-  finally { btn.innerHTML = 'ADD SINGLE RECORD'; btn.disabled = false; }
-});
-
-// Trigger Notification Payload
-triggerBtn.addEventListener('click', async () => {
-  if (passengers.length === 0) return showToast('Manifest is empty. Ingest data first.');
-  JOURNEY_ID = document.getElementById('trip-id').value;
-  
-  triggerBtn.innerHTML = '<span class="pulse-ring" style="position:relative; width:8px; height:8px;"></span> DISPATCHING...';
-  triggerBtn.style.opacity = '0.7';
-
-  try {
-    const response = await fetch('http://localhost:3000/api/calls/notify-journey', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ journeyId: JOURNEY_ID })
-    });
-    if (response.ok) {
-      showToast('Dispatch Sequence Sent to Queue!');
-      fetchPassengers();
-      document.querySelector('[data-target="view-monitoring"]').click(); // Auto-switch to monitoring tab
-    }
-  } catch (err) { showToast('Network Error bridging to server.'); } 
-  finally { 
-    triggerBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg> NOTIFY MANIFEST';
-    triggerBtn.style.opacity = '1';
-  }
-});
-
-// Real-time Database Observer
-supabase.channel('public:call_logs')
-  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'call_logs' }, payload => {
-    fetchPassengers();
-  }).subscribe();
-
-supabase.channel('public:ai_logs')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ai_logs' }, payload => {
-    fetchAILogs();
-  }).subscribe();
-
-// Dynamic SaaS Interaction Logic
-const fleetData = {
-  'VRL': ['KA-25-A-1111 (Volvo 9400)', 'KA-25-B-2222 (Sleeper)'],
-  'KSRTC': ['KA-01-F-1234 (Airavat)', 'KA-57-F-9999 (Club Class)'],
-  'SRS': ['KA-02-C-5555 (Scania)', 'KA-02-D-6666 (Sleeper)'],
-  'INTR': ['HR-38-V-8888 (SmartBus)', 'DL-01-Z-0000 (SmartBus)']
-};
-
-const opSelect = document.getElementById('trip-op');
-const busSelect = document.getElementById('trip-bus');
-
-opSelect.addEventListener('change', (e) => {
-  const op = e.target.value;
-  const fleets = fleetData[op] || [];
-  
-  busSelect.innerHTML = '<option value="" disabled selected></option>';
-  fleets.forEach(b => {
-    const opt = document.createElement('option');
-    opt.value = b;
-    opt.textContent = b;
-    busSelect.appendChild(opt);
-  });
-  
-  busSelect.disabled = false;
-  
-  document.getElementById('trip-id').value = `${op}-${Math.floor(Math.random() * 900) + 100}-DYN`;
-  document.getElementById('trip-dep').value = '22:00';
-});
-
-document.getElementById('save-preset-btn').addEventListener('click', () => {
-  if (!opSelect.value || !busSelect.value) return showToast('Please select Operator and Fleet first!');
-  fetchPassengers();
-  showToast('Manifest Synced with Database');
-});
-
-// Load Init
-initChart();
-fetchPassengers();
-fetchAILogs();

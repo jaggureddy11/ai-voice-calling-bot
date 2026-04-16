@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+    <!-- Abhibus Logo SVG Placeholder -->
+    <style>
+        .text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 64px;
+            font-weight: 800;
+            fill: #E31A22;
+            letter-spacing: -2px;
+        }
+    </style>
+    <rect width="100%" height="100%" fill="transparent" />
+    <text x="50%" y="65%" text-anchor="middle" class="text">abhibus</text>
+</svg>
