@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
+const aiService = require('../services/aiService');
 
 const getPassengers = async (req, res) => {
   const { journeyId } = req.params;
@@ -48,9 +49,13 @@ const addPassenger = async (req, res) => {
 
 const notifyJourney = async (req, res) => {
   try {
-    const journeyId = req.body.journeyId || req.params.journeyId;
-    if (!journeyId) return res.status(400).json({ error: 'journeyId is required.' });
-
+    const { journeyId } = req.params;
+    const { force, message_override } = req.body;
+    
+    // In our existing implementation, notifyJourneyLogic doesn't support
+    // force/message_override yet, but we've added schema support for it.
+    // For now, let's keep it simple.
+    
     const result = await notifyJourneyLogic(journeyId);
     res.status(200).json(result);
   } catch (error) {
@@ -111,7 +116,6 @@ const notifyJourneyLogic = async (journeyId) => {
 };
 
 const twilio = require('twilio');
-const OpenAI = require('openai');
 
 const handleIncomingVoice = (req, res) => {
   const twimlObj = new twilio.twiml.VoiceResponse();
@@ -135,9 +139,9 @@ const handleVoiceRespond = async (req, res) => {
   const callLogId = req.query.callLogId;
   const twimlObj = new twilio.twiml.VoiceResponse();
 
-  if (!userSpeech) {
+  if (!userSpeech || userSpeech.trim().length === 0) {
     twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'I did not catch that. Could you please repeat?');
-    twimlObj.redirect('/api/calls/voice'); // Send them back to the start
+    twimlObj.redirect(`/api/calls/voice/${callLogId ? `?callLogId=${callLogId}` : ''}`); 
     res.set('Content-Type', 'text/xml');
     return res.send(twimlObj.toString());
   }
@@ -145,8 +149,6 @@ const handleVoiceRespond = async (req, res) => {
   console.log(`[Caller Said]: ${userSpeech}`);
 
   try {
-    // LOG TO SUPABASE
-    try {
       let passengerName = 'Unknown';
       let passengerLanguage = 'en-IN';
 
@@ -163,46 +165,22 @@ const handleVoiceRespond = async (req, res) => {
         }
       }
 
-      const openai = new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
-        baseURL: 'https://api.groq.com/openai/v1',
-      });
+      // Analyze intent using our new service
+      const { intent, response: aiResponse } = await aiService.analyzeIntent(userSpeech, passengerLanguage);
+      console.log(`[Intent]: ${intent} -> [AI Response]: ${aiResponse}`);
 
-      const completion = await openai.chat.completions.create({
-        model: 'llama-3.3-70b-versatile', 
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are a helpful bus assistant. 
-            Identify if the user is LATE, CANCELING, or just ASKING A QUESTION.
-            Respond in this format: [INTENT: XXX] Your response here.
-            Language: ${passengerLanguage}. Keep response under 2 sentences.` 
-          },
-          { role: 'user', content: userSpeech }
-        ]
-      });
-
-      let fullContent = completion.choices[0].message.content;
-      console.log(`[AI Raw]: ${fullContent}`);
-
-      // Extract Intent
-      let detectedIntent = 'GENERAL';
-      if (fullContent.includes('[INTENT: LATE]')) detectedIntent = 'LATE';
-      if (fullContent.includes('[INTENT: CANCEL]')) detectedIntent = 'CANCEL';
-      
-      const aiResponse = fullContent.replace(/\[INTENT: .*?\]/, '').trim();
-
+      // LOG TO SUPABASE
       await supabase.from('ai_logs').insert([{
         call_log_id: callLogId,
         passenger_name: passengerName,
         user_speech: userSpeech,
         bot_response: aiResponse,
-        intent: detectedIntent,
-        sentiment: detectedIntent !== 'GENERAL' ? 'Urgent' : 'Neutral'
+        intent: intent,
+        sentiment: intent !== 'GENERAL' ? 'Urgent' : 'Neutral'
       }]);
 
       // If LATE or CANCEL, flag the call log for the operator dashboard
-      if (detectedIntent === 'LATE' || detectedIntent === 'CANCEL') {
+      if (['LATE', 'CANCEL', 'URGENT'].includes(intent)) {
         await supabase
           .from('call_logs')
           .update({ is_flagged: true })
@@ -221,7 +199,7 @@ const handleVoiceRespond = async (req, res) => {
     res.set('Content-Type', 'text/xml');
     res.send(twimlObj.toString());
   } catch (error) {
-    console.error('Groq Error:', error);
+    console.error('AI Interaction Error:', error);
     twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'Sorry, my system is currently down. Please try again later.');
     res.set('Content-Type', 'text/xml');
     res.send(twimlObj.toString());
@@ -229,18 +207,17 @@ const handleVoiceRespond = async (req, res) => {
 };
 
 const handleVoiceStatus = async (req, res) => {
-  const { CallSid, CallStatus, CallDuration, ApiVersion } = req.body;
+  const { CallSid, CallStatus, CallDuration } = req.body;
   console.log(`[Twilio Status Update] Sid: ${CallSid} Status: ${CallStatus} Duration: ${CallDuration}s`);
 
   try {
-    // Map Twilio statuses to our internal SaaS statuses
     const updatePayload = {
-      status: CallStatus, // 'completed', 'busy', 'no-answer', 'failed', 'canceled'
+      status: CallStatus, 
       duration: CallDuration ? parseInt(CallDuration) : 0
     };
 
-    if (CallStatus === 'failed') {
-      updatePayload.last_error = 'Telephony provider error';
+    if (['failed', 'busy', 'no-answer', 'canceled'].includes(CallStatus)) {
+      updatePayload.last_error = `Provider status: ${CallStatus}`;
     }
 
     await supabase
@@ -269,10 +246,9 @@ const sendSMSFallback = async (req, res) => {
     const sms = await twilioClient.messages.create({
       body: message || `Hi ${p.name}, our AI assistant couldn't reach you. Your bus departs soon. Please be at the boarding point!`,
       to: p.phone,
-      from: process.env.TWILIO_FROM_NUMBER // Assuming SMS capability on this number
+      from: process.env.TWILIO_FROM_NUMBER 
     });
 
-    // Update status to 'completed' as fallback is done
     await supabase.from('call_logs').update({ status: 'sms-sent' }).eq('passenger_id', passengerId);
 
     res.status(200).json({ success: true, sid: sms.sid });
@@ -304,3 +280,4 @@ module.exports = {
   getAILogs,
   notifyJourneyLogic
 };
+
