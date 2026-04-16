@@ -5,33 +5,34 @@ const supabase = require('../config/supabase');
 
 // Worker to process 'callNotifications' jobs
 const worker = new Worker('callNotifications', async job => {
-  // We use boarding_point to match the Supabase SQL column 
-  const { name, phone, boarding_point, time, language, callLogId } = job.data;
-  
-  console.log(`[Job ${job.id}] Processing call to ${name} (${phone})...`);
+  try {
+    // We use boarding_point to match the Supabase SQL column 
+    const { name, phone, boarding_point, time, language, callLogId } = job.data;
+    
+    console.log(`[Job ${job.id}] Processing call to ${name} (${phone})...`);
 
-  // Simple Twilio string interpolation using TwiML
-  let message = `Namaste ${name}, your bus to ${boarding_point} is departing at ${time}. Please reach the boarding point 15 minutes early.`;
-  
-  if(language === 'hi-IN') {
-     message = `Namaste ${name}, aapki bus ${boarding_point} se ${time} par ravaana hogi. Kripya pandra minute pehle pahunch jaayein.`;
-  } else if(language === 'te-IN') {
-     message = `Namaste ${name}, mee bus ${boarding_point} nundi ${time} ki bayaluderutundi. Dayachesi padmudu nimmishalu mundu cherukondi.`;
-  } else if(language === 'kn-IN') {
-     message = `Namaste ${name}, nimma bus ${boarding_point} ninda ${time} gantege horaduttade. Dayavittu hadinaidu nimisha mundagi banni.`;
-  }
+    // Simple Twilio string interpolation using TwiML
+    let message = `Namaste ${name}, your bus to ${boarding_point} is departing at ${time}. Please reach the boarding point 15 minutes early.`;
+    
+    if(language === 'hi-IN') {
+       message = `Namaste ${name}, aapki bus ${boarding_point} se ${time} par ravaana hogi. Kripya pandra minute pehle pahunch jaayein.`;
+    } else if(language === 'te-IN') {
+       message = `Namaste ${name}, mee bus ${boarding_point} nundi ${time} ki bayaluderutundi. Dayachesi padmudu nimmishalu mundu cherukondi.`;
+    } else if(language === 'kn-IN') {
+       message = `Namaste ${name}, nimma bus ${boarding_point} ninda ${time} gantege horaduttade. Dayavittu hadinaidu nimisha mundagi banni.`;
+    }
 
-  const twimlObj = new twilioClient.twiml.VoiceResponse();
-  
-  // Make the call conversational by adding a Gather block
-  const gather = twimlObj.gather({
-    input: 'speech',
-    action: `/api/calls/voice/respond?callLogId=${callLogId}`,
-    speechTimeout: 'auto',
-    language: language || 'en-IN'
-  });
+    const twimlObj = new twilioClient.twiml.VoiceResponse();
+    
+    // Make the call conversational by adding a Gather block
+    const gather = twimlObj.gather({
+      input: 'speech',
+      action: `/api/calls/voice/respond?callLogId=${callLogId}`,
+      speechTimeout: 'auto',
+      language: language || 'en-IN'
+    });
 
-  gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
+    gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
 
     // Update Supabase with attempt count increment
     if (callLogId) {
@@ -62,16 +63,17 @@ const worker = new Worker('callNotifications', async job => {
     console.error(`[Job ${job.id}] Failed to trigger call: ${error.message}`);
     
     // Update Supabase Call Log on Failure
-    if (callLogId) {
+    if (job.data.callLogId) {
       await supabase
         .from('call_logs')
         .update({ status: 'failed' })
-        .eq('id', callLogId);
+        .eq('id', job.data.callLogId);
     }
 
     throw error; // Let BullMQ handle the retry
   }
 }, { connection });
+
 
 worker.on('completed', (job) => {
   console.log(`Job with id ${job.id} has been completed`);

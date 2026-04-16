@@ -49,16 +49,15 @@ const addPassenger = async (req, res) => {
 
 const notifyJourney = async (req, res) => {
   try {
-    const { journeyId } = req.params;
+    const journeyId = req.body.journeyId || req.params.journeyId;
     const { force, message_override } = req.body;
     
-    // In our existing implementation, notifyJourneyLogic doesn't support
-    // force/message_override yet, but we've added schema support for it.
-    // For now, let's keep it simple.
-    
+    if (!journeyId) return res.status(400).json({ error: 'journeyId is required.' });
+
     const result = await notifyJourneyLogic(journeyId);
     res.status(200).json(result);
   } catch (error) {
+
     console.error('Error triggering journey calls:', error);
     res.status(500).json({ error: error.message });
   }

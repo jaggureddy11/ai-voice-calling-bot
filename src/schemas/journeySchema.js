@@ -63,6 +63,8 @@ const journeyTriggerParamsSchema = z.object({
 
 const journeyTriggerBodySchema = z
   .object({
+    journeyId: z.string({ required_error: 'journeyId is required' }).min(3),
+    
     // Lets an operator override the auto-generated message for one specific blast
     message_override: z
       .string()
@@ -82,6 +84,7 @@ const journeyTriggerBodySchema = z
   })
   .optional()
   .default({});
+
 
 // ---------------------------------------------------------------------------
 // Journey query params

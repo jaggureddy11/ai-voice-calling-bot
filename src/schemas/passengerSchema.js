@@ -45,9 +45,13 @@ const SUPPORTED_LANGUAGES = [
 const languageSchema = z
   .string()
   .transform((val) => val.toLowerCase())
-  .refine((val) => SUPPORTED_LANGUAGES.includes(val), {
+  .refine((val) => {
+    const base = val.split('-')[0];
+    return SUPPORTED_LANGUAGES.includes(base) || SUPPORTED_LANGUAGES.includes(val);
+  }, {
     message: `Language must be one of: ${SUPPORTED_LANGUAGES.join(', ')}`,
   });
+
 
 // ---------------------------------------------------------------------------
 // Single passenger ingestion
@@ -88,7 +92,10 @@ const passengerSchema = z.object({
 
   language: languageSchema.default('en'),
 
+  time: z.string().optional(),
+
   pnr: z
+
     .string()
     .trim()
     .max(20, 'PNR must not exceed 20 characters')
