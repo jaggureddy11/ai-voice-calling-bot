@@ -16,6 +16,8 @@ const {
 router.get('/operators', callController.getOperators);
 router.get('/agencies', callController.getAgencies);
 router.get('/buses', callController.getBuses);
+router.get('/stats', callController.getDashboardStats);
+router.post('/seed', callController.seedDatabase);
 
 // Passenger Management Endpoints
 router.get(

@@ -38,20 +38,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const title = localStorage.getItem('boardly_title') || 'Select Operator';
         const bread = localStorage.getItem('boardly_bread') || 'Home / Operators';
 
-        if(opId) { const op = operators.find(x => x.id === opId); if(op) selectOperator(op, true); }
-        if(agId) { 
-            // We need to fetch agencies because they are dynamic now
-            const agRes = await fetch(`${API_BASE}/agencies?operatorId=${opId}`);
-            agencies = await agRes.json();
-            const ag = agencies.find(x => x.id === agId); 
-            if(ag) selectAgency(ag, true); 
-        }
-        if(busId) { 
-            // Fetch buses
-            const busRes = await fetch(`${API_BASE}/buses?agencyId=${agId}`);
-            buses = await busRes.json();
-            const bus = buses.find(x => x.id === busId); 
-            if(bus) selectBus(bus, true); 
+        if(opId) { 
+            const op = operators.find(x => x.id === opId); 
+            if(op) {
+                await selectOperator(op, true);
+                if(agId) { 
+                    try {
+                        const agRes = await fetch(`${API_BASE}/agencies?operatorId=${opId}`);
+                        agencies = await agRes.json();
+                        const ag = agencies.find(x => x.id === agId); 
+                        if(ag) {
+                            await selectAgency(ag, true);
+                            if(busId) {
+                                try {
+                                    const busRes = await fetch(`${API_BASE}/buses?agencyId=${agId}`);
+                                    buses = await busRes.json();
+                                    const bus = buses.find(x => x.id === busId); 
+                                    if(bus) await selectBus(bus, true); 
+                                } catch (e) { console.error('Restore bus failed'); }
+                            }
+                        }
+                    } catch (e) { console.error('Restore agency failed'); }
+                }
+            }
         }
 
         navigate(viewId, title, bread, true);
@@ -91,16 +100,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            const target = btn.getAttribute('data-target');
-            if(target) {
-                // Determine title mapped
+            const targetId = btn.getAttribute('data-target');
+            if(targetId) {
                 let title = 'Dashboard';
                 let breadcrumbs = 'Home';
-                if(target === 'view-operators') { title = "Select Operator"; breadcrumbs = "Home / Operators"; }
-                if(target === 'view-summary') { title = "System Summary"; breadcrumbs = "Home / Analytics"; }
-                if(target === 'view-ai-chat') { title = "AI Assistant"; breadcrumbs = "Home / AI Agent"; }
+                if(targetId === 'view-operators') { title = "Select Operator"; breadcrumbs = "Home / Operators"; }
+                if(targetId === 'view-summary') { title = "System Summary"; breadcrumbs = "Home / Analytics"; }
+                if(targetId === 'view-ai-chat') { title = "AI Assistant"; breadcrumbs = "Home / AI Agent"; }
                 
-                navigate(target, title, breadcrumbs);
+                navigate(targetId, title, breadcrumbs);
+
+                if(targetId === 'view-summary') { 
+                    fetchSummaryStats();
+                    initChart();
+                }
             }
         });
     });
@@ -144,15 +157,29 @@ function renderOperators() {
     const grid = document.getElementById('operators-grid');
     grid.innerHTML = '';
     
+    if (!operators || operators.length === 0) {
+        grid.innerHTML = `
+            <div class="premium-panel" style="grid-column: 1/-1; text-align:center; padding: 60px;">
+                <h4 style="margin-bottom:20px;">No Operators in Database</h4>
+                <p style="margin-bottom:30px; color: var(--text-muted);">The app is connected to Supabase, but the tables are empty.</p>
+                <button class="btn-primary" onclick="seedDemoData()">Restore Demo Data</button>
+            </div>
+        `;
+        return;
+    }
+
     operators.forEach(op => {
         const card = document.createElement('div');
         card.className = 'premium-panel operator-card';
         card.onclick = () => selectOperator(op);
         
+        const icon = op.icon || 'https://images.unsplash.com/photo-1544620347-c4fd4a9d5957?auto=format&fit=crop&w=100&q=80';
+        const tag = op.tag || 'Service Provider';
+
         card.innerHTML = `
-            <div class="op-logo-wrap"><img src="${op.icon}" alt="${op.name}"></div>
+            <div class="op-logo-wrap"><img src="${icon}" alt="${op.name}"></div>
             <h4 class="op-title">${op.name}</h4>
-            <p class="op-meta">${op.tag}</p>
+            <p class="op-meta">${tag}</p>
         `;
         grid.appendChild(card);
     });
@@ -473,13 +500,32 @@ function showToast(msg, type = 'info') {
     }, 3000);
 }
 
+async function fetchSummaryStats() {
+    try {
+        const res = await fetch(`${API_BASE}/stats`);
+        const stats = await res.json();
+        
+        document.getElementById('stat-active-trips').innerText = stats.activeTrips;
+        document.getElementById('stat-total-passengers').innerText = stats.totalPassengers;
+        document.getElementById('stat-boarded-count').innerText = stats.boardedCount;
+        document.getElementById('stat-success-rate').innerText = stats.successRate;
+    } catch (e) {
+        console.error('Failed to fetch stats', e);
+    }
+}
+
 // --- CHART.JS SUMMARY ---
 
+let summaryChartInstance = null;
 function initChart() {
     const ctx = document.getElementById('summaryChart');
     if(!ctx) return;
     
-    new Chart(ctx, {
+    if (summaryChartInstance) {
+        summaryChartInstance.destroy();
+    }
+
+    summaryChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -513,4 +559,24 @@ function initChart() {
             }
         }
     });
+}
+
+function resetApp() {
+    localStorage.clear();
+    window.location.reload();
+}
+
+async function seedDemoData() {
+    showToast("Restoring demo data to Supabase...", "info");
+    try {
+        const res = await fetch(`${API_BASE}/seed`, { method: 'POST' });
+        if (res.ok) {
+            showToast("Database seeded successfully!", "success");
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast("Seeding failed. Check backend logs.", "danger");
+        }
+    } catch (e) {
+        showToast("Network Error: Could not reach backend.", "danger");
+    }
 }

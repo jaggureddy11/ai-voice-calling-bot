@@ -44,11 +44,10 @@
                 <button class="nav-btn" title="Settings">
                     <i class="ri-settings-3-line"></i>
                 </button>
+                <button class="nav-btn" onclick="resetApp()" title="Reset Session">
+                    <i class="ri-refresh-line"></i>
+                </button>
             </nav>
-            <div class="user-profile">
-                <!-- Using a classy monochrome placeholder -->
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80&sat=-100" alt="Admin">
-            </div>
         </aside>
 
         <main class="main-content">
@@ -64,6 +63,9 @@
                         <input type="text" placeholder="Search operations...">
                     </div>
                     <button class="btn-icon"><i class="ri-notification-3-line"></i><span class="badge">3</span></button>
+                    <div class="user-profile-header">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80&sat=-100" alt="Admin" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-light); cursor: pointer;">
+                    </div>
                 </div>
             </header>
 
@@ -83,8 +85,10 @@
                 <!-- VIEW 2: AGENCIES -->
                 <section id="view-agencies" class="view-section">
                     <div class="section-top">
-                        <button class="btn-back" onclick="navigate('view-operators', 'Select Operator', 'Home / Operators')"><i class="ri-arrow-left-line"></i> Back</button>
-                        <h3 id="agency-provider-title" style="margin-top:20px;">Travel Agencies</h3>
+                        <div class="section-top-inner">
+                            <button class="btn-back" onclick="navigate('view-operators', 'Select Operator', 'Home / Operators')"><i class="ri-arrow-left-line"></i> Back</button>
+                            <h3 id="agency-provider-title">Travel Agencies</h3>
+                        </div>
                     </div>
                     <div class="grid-cards-small" id="agencies-grid">
                         <!-- Populated by JS -->
@@ -94,8 +98,10 @@
                 <!-- VIEW 3: BUS LIST -->
                 <section id="view-buses" class="view-section">
                     <div class="section-top">
-                        <button class="btn-back" onclick="navigate('view-agencies', 'Select Agency', 'Home / Agencies')"><i class="ri-arrow-left-line"></i> Back</button>
-                        <h3 id="bus-agency-title" style="margin-top:20px;">Active Fleet</h3>
+                        <div class="section-top-inner">
+                            <button class="btn-back" onclick="navigate('view-agencies', 'Select Agency', 'Home / Agencies')"><i class="ri-arrow-left-line"></i> Back</button>
+                            <h3 id="bus-agency-title">Active Fleet</h3>
+                        </div>
                     </div>
                     <div class="list-layout" id="buses-list">
                         <!-- Populated by JS -->
@@ -105,8 +111,10 @@
                 <!-- VIEW 4: BUS DASHBOARD (PASSENGERS) -->
                 <section id="view-bus-dashboard" class="view-section">
                     <div class="section-top dashboard-top">
-                        <button class="btn-back" onclick="navigate('view-buses', 'Active Fleet', 'Home / Fleet')"><i class="ri-arrow-left-line"></i> Back</button>
-                        <div class="bus-meta-card premium-panel" style="margin-top:15px;">
+                        <div class="section-top-inner">
+                            <button class="btn-back" onclick="navigate('view-buses', 'Active Fleet', 'Home / Fleet')"><i class="ri-arrow-left-line"></i> Back</button>
+                        </div>
+                        <div class="bus-meta-card premium-panel">
                             <div class="meta-left">
                                 <h3 id="dash-bus-no" class="serif-title">MH 12 AB 1234</h3>
                                 <p id="dash-route">Mumbai &rarr; Pune <span class="divider-dot">&bull;</span> <span id="dash-time">22:30 PM</span></p>
@@ -150,25 +158,25 @@
                         <div class="stat-card premium-panel">
                             <div class="stat-info">
                                 <h5>Active Trips</h5>
-                                <h3 class="serif-title">24</h3>
+                                <h3 class="serif-title" id="stat-active-trips">0</h3>
                             </div>
                         </div>
                         <div class="stat-card premium-panel">
                             <div class="stat-info">
-                                <h5>Completed</h5>
-                                <h3 class="serif-title">156</h3>
+                                <h5>Total Passengers</h5>
+                                <h3 class="serif-title" id="stat-total-passengers">0</h3>
                             </div>
                         </div>
                         <div class="stat-card premium-panel">
                             <div class="stat-info">
-                                <h5>Missed Boardings</h5>
-                                <h3 class="serif-title">3</h3>
+                                <h5>Boarded</h5>
+                                <h3 class="serif-title" id="stat-boarded-count">0</h3>
                             </div>
                         </div>
                         <div class="stat-card premium-panel">
                             <div class="stat-info">
-                                <h5>Success Rate</h5>
-                                <h3 class="serif-title">96.5%</h3>
+                                <h5>Voice Success</h5>
+                                <h3 class="serif-title" id="stat-success-rate">0%</h3>
                             </div>
                         </div>
                     </div>

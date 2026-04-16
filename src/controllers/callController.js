@@ -3,58 +3,53 @@ const { addCallToQueue } = require('../jobs/callQueue');
 const aiService = require('../services/aiService');
 
 const getOperators = async (req, res) => {
-  const { data, error } = await supabase.from('operators').select('*').order('name');
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json(data || []);
+  const operators = [
+    { id: 'abhibus', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+    { id: 'redbus', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+    { id: 'cleartrip', name: 'Cleartrip', tag: 'Premium', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6a/db/5f/6adb5f7d-b581-202b-2e95-5b0b79e3cc91/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg' },
+    { id: 'goibibo', name: 'Goibibo', tag: 'Popular', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/22/08/9c/22089c0f-7ae0-fc05-85fc-f3308649c21d/appIconSet-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg' },
+    { id: 'makemytrip', name: 'MakeMyTrip', tag: 'Travel Giant', icon: '/assets/makemytrip.png' },
+    { id: 'paytm', name: 'Paytm Travel', tag: 'Everyday Apps', icon: '/assets/paytm.png' },
+    { id: 'ixigo', name: 'Ixigo', tag: 'Smart Fares', icon: '/assets/ixigo.png' },
+    { id: 'zingbus', name: 'Zingbus', tag: 'New Age Fleet', icon: '/assets/zingbus.png' }
+  ];
+  res.status(200).json(operators);
 };
 
 const getAgencies = async (req, res) => {
-  const { operatorId } = req.query;
-  let query = supabase.from('agencies').select('*');
-  if (operatorId) query = query.eq('operator_id', operatorId);
+  const agencies = [
+    { id: 'vrl', name: 'VRL Travels', route_count: 145, rating: 4.8, operator_id: 'abhibus' },
+    { id: 'srs', name: 'SRS Travels', route_count: 89, rating: 4.5, operator_id: 'abhibus' },
+    { id: 'laars', name: "Laar's Travels", route_count: 34, rating: 4.9, operator_id: 'abhibus' },
+    { id: 'kukeshri', name: 'Kukeshri Travels', route_count: 56, rating: 4.2, operator_id: 'redbus' },
+    { id: 'nagashree', name: 'Nagashree Travels', route_count: 42, rating: 4.6, operator_id: 'redbus' }
+  ];
   
-  const { data, error } = await query.order('name');
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json(data || []);
+  const { operatorId } = req.query;
+  const filtered = operatorId ? agencies.filter(a => a.operator_id === operatorId) : agencies;
+  res.status(200).json(filtered);
 };
 
 const getBuses = async (req, res) => {
+  const buses = [
+    { id: 'bus1', number: 'KA 01 AB 1234', agency_id: 'vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
+    { id: 'bus2', number: 'KA 04 VTR 5566', agency_id: 'vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' },
+    { id: 'bus3', number: 'MH 12 XY 9988', agency_id: 'vrl', route: 'MUM → GOA', time: '18:00', status: 'completed' }
+  ];
+
   const { agencyId } = req.query;
-  let query = supabase.from('buses').select('*');
-  if (agencyId) query = query.eq('agency_id', agencyId);
-  
-  const { data, error } = await query.order('time');
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json(data || []);
+  const filtered = agencyId ? buses.filter(b => b.agency_id === agencyId) : buses;
+  res.status(200).json(filtered);
 };
 
 const getPassengers = async (req, res) => {
-  const { busId } = req.params;
-  const { data, error } = await supabase
-    .from('passengers')
-    .select(`
-      id, 
-      name, 
-      phone, 
-      boarding_point, 
-      seat_no,
-      time, 
-      is_boarded,
-      call_status,
-      call_logs ( 
-        status, 
-        created_at, 
-        attempt_count, 
-        last_error, 
-        duration,
-        is_flagged
-      )
-    `)
-    .eq('bus_id', busId)
-    .order('created_at', { ascending: true });
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json(data || []);
+  const mockPassengers = [
+    { id: 'p1', name: 'Alia Bhatt', phone: '+919876543210', seat_no: 'A1', boarding_point: 'Anand Rao Circle', time: '20:30', is_boarded: true, call_status: 'completed', call_logs: [{status:'completed', duration: 45, attempt_count: 1}] },
+    { id: 'p2', name: 'Ranbir Kapoor', phone: '+919988776655', seat_no: 'A2', boarding_point: 'Anand Rao Circle', time: '20:30', is_boarded: false, call_status: 'failed', call_logs: [{status:'failed', last_error:'No Answer', attempt_count: 3}] },
+    { id: 'p3', name: 'Shahrukh Khan', phone: '+918877665544', seat_no: 'B1', boarding_point: 'Madiwala', time: '21:00', is_boarded: false, call_status: 'pending', call_logs: [] },
+    { id: 'p4', name: 'Deepika Padukone', phone: '+917766554433', seat_no: 'B2', boarding_point: 'Madiwala', time: '21:00', is_boarded: true, call_status: 'success', call_logs: [] }
+  ];
+  res.status(200).json(mockPassengers);
 };
 
 const addPassenger = async (req, res) => {
@@ -336,6 +331,72 @@ const sendSMSFallback = async (req, res) => {
   }
 };
 
+const getDashboardStats = async (req, res) => {
+  try {
+    const { data: totalBuses } = await supabase.from('buses').select('id', { count: 'exact', head: true });
+    const { data: totalPassengers } = await supabase.from('passengers').select('id', { count: 'exact', head: true });
+    const { data: boardedPassengers } = await supabase.from('passengers').select('id', { count: 'exact', head: true }).eq('is_boarded', true);
+    const { data: callLogs } = await supabase.from('call_logs').select('status');
+
+    const successCalls = callLogs.filter(c => c.status === 'completed' || c.status === 'success').length;
+    const totalCalls = callLogs.length;
+    const successRate = totalCalls > 0 ? ((successCalls / totalCalls) * 100).toFixed(1) : '100';
+
+    res.status(200).json({
+      activeTrips: totalBuses?.length || 0,
+      totalPassengers: totalPassengers?.length || 0,
+      boardedCount: boardedPassengers?.length || 0,
+      successRate: `${successRate}%`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const seedDatabase = async (req, res) => {
+  try {
+    const operators = [
+      { id: 'abhibus', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+      { id: 'redbus', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+      { id: 'cleartrip', name: 'Cleartrip', tag: 'Premium', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6a/db/5f/6adb5f7d-b581-202b-2e95-5b0b79e3cc91/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg' },
+      { id: 'goibibo', name: 'Goibibo', tag: 'Popular', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/22/08/9c/22089c0f-7ae0-fc05-85fc-f3308649c21d/appIconSet-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg' }
+    ];
+
+    const agencies = [
+      { id: 'vrl', name: 'VRL Travels', route_count: 145, rating: 4.8, operator_id: 'abhibus' },
+      { id: 'srs', name: 'SRS Travels', route_count: 89, rating: 4.5, operator_id: 'abhibus' },
+      { id: 'laars', name: "Laar's Travels", route_count: 34, rating: 4.9, operator_id: 'abhibus' },
+      { id: 'kukeshri', name: 'Kukeshri Travels', route_count: 56, rating: 4.2, operator_id: 'redbus' },
+      { id: 'nagashree', name: 'Nagashree Travels', route_count: 42, rating: 4.6, operator_id: 'redbus' }
+    ];
+
+    const buses = [
+      { id: 'bus1', number: 'KA 01 AB 1234', agency_id: 'vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
+      { id: 'bus2', number: 'KA 04 VTR 5566', agency_id: 'vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' },
+      { id: 'bus3', number: 'MH 12 XY 9988', agency_id: 'vrl', route: 'MUM → GOA', time: '18:00', status: 'completed' }
+    ];
+
+    await supabase.from('operators').upsert(operators);
+    await supabase.from('agencies').upsert(agencies);
+    await supabase.from('buses').upsert(buses);
+
+    res.status(200).json({ success: true, message: 'Database seeded with demo data.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getAILogs = async (req, res) => {
+  const { data, error } = await supabase
+    .from('ai_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json(data || []);
+};
+
 const toggleBoardingStatus = async (req, res) => {
   const { passengerId } = req.params;
   const { is_boarded } = req.body;
@@ -363,7 +424,9 @@ module.exports = {
   handleVoiceStatus,
   handleExotelVoice,
   sendSMSFallback,
+  getDashboardStats,
   getAILogs,
+  seedDatabase,
   notifyJourneyLogic
 };
 
