@@ -13,6 +13,18 @@ Built for enterprise scale, it handles thousands of concurrent calls through rob
 5.  **Multi-Operator Architecture**: Built-in support for data isolation across multiple transit companies (SaaS model).
 6.  **Advanced Observability**: Track granular statuses (`Busy`, `No-Answer`, `Ringing`) and call durations in real-time.
 
+## 🚌 BoardPing | AI-Powered Voice Notifications
+
+BoardPing is an enterprise-grade AI notification agent designed for transport operators. It automates passenger dispatch calls using Twilio and Groq (LLM), ensuring manifests are clear and passengers are notified autonomously.
+
+### 🌟 Key Features
+- **Intelligent Talk Loops**: Conversational AI interactions using Llama 3 (via Groq).
+- **BullMQ Task Engine**: Reliable retry logic and concurrency management via Redis.
+- **Robust Validation Layer**: All ingress paths are strictly typed and sanitized using Zod 3.
+- **Indian Locale Optimization**: Automated phone normalization (+91...) and multilingual voice support.
+- **Service-Oriented AI**: Decoupled AI interaction logic in `src/services/aiService.js`.
+- **Real-time Manifest**: Live operator dashboard with semantic intent extraction and status tracking.
+
 ## 💡 System Architecture
 
 1. **Trigger Engine** - Journey-based notifications seamlessly trigger parallel worker dispatches.
@@ -24,12 +36,12 @@ Built for enterprise scale, it handles thousands of concurrent calls through rob
 ---
 
 ## 🛠 Tech Stack
-- **Backend:** Node.js / Express
-- **Queue/Worker:** BullMQ & Redis
-- **Database:** Supabase (PostgreSQL)
-- **Telephony:** Twilio SDK (Voice + SMS)
-- **AI Backend:** Groq API (`llama-3.3-70b-versatile`)
-- **Frontend:** Vanilla JS / CSS (Bento-style Glassmorphism)
+- **Backend**: Node.js, Express, BullMQ, Redis
+- **Intelligence**: LLM (Groq / OpenAI API compatible)
+- **Telephony**: Twilio Voice (Webhooks & Status Callbacks)
+- **Database**: Supabase (PostgreSQL)
+- **Validation**: Zod (Type Safety & Normalization)
+- **Frontend**: Vanilla JS, Chart.js, CSS Glassmorphism
 
 ---
 
