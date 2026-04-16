@@ -24,6 +24,9 @@ const generateSpeech = async (text, voiceId = 'af_bella') => {
   console.log(`[HF Voice]: Generating speech for: "${text.substring(0, 30)}..."`);
   
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     const response = await fetch(
       "https://router.huggingface.co/fal-ai/fal-ai/kokoro/american-english",
       {
@@ -33,12 +36,15 @@ const generateSpeech = async (text, voiceId = 'af_bella') => {
         },
         method: "POST",
         body: JSON.stringify({ text: text }),
+        signal: controller.signal
       }
     );
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`HF TTS Error: ${response.statusText} - ${errText}`);
+      console.warn(`[HF Voice Warning]: API returned ${response.status}. Falling back to standard voice.`);
+      throw new Error(`HF TTS Status Error: ${response.status}`);
     }
 
     const buffer = await response.arrayBuffer();
@@ -47,12 +53,16 @@ const generateSpeech = async (text, voiceId = 'af_bella') => {
     
     fs.writeFileSync(filepath, Buffer.from(buffer));
     
-    return `${process.env.BASE_URL}/voice_cache/${filename}`;
+    const finalUrl = `${process.env.BASE_URL}/voice_cache/${filename}`;
+    console.log(`[HF Voice Success]: Audio ready at ${finalUrl}`);
+    return finalUrl;
   } catch (error) {
-    console.error('[HF Voice Error]:', error);
+    console.error('[HF Voice Error]:', error.name === 'AbortError' ? 'HF API Timeout (10s)' : error.message);
     return null;
   }
 };
+
+
 
 
 /**

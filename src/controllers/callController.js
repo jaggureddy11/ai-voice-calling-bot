@@ -133,7 +133,50 @@ const handleIncomingVoice = (req, res) => {
   res.send(twimlObj.toString());
 };
 
+const handleExotelVoice = async (req, res) => {
+  const { callLogId } = req.query;
+  console.log(`[Exotel Webhook Hit]: LogID=${callLogId}`);
+
+  try {
+    let greeting = 'Namaste! Welcome to BoardPing.';
+    
+    if (callLogId) {
+      const { data } = await supabase.from('call_logs').select('passengers(name, boarding_point, time)').eq('id', callLogId).single();
+      if (data?.passengers) {
+        const p = data.passengers;
+        greeting = `Namaste ${p.name}, our bus to ${p.boarding_point} is departing at ${p.time}. Please reach 15 minutes early.`;
+      }
+    }
+
+    console.log(`[Exotel AI]: Generating premium voice for: "${greeting.substring(0, 20)}..."`);
+    
+    const { generateSpeech } = require('../services/hfService');
+    const hfUrl = await generateSpeech(greeting);
+
+    res.set('Content-Type', 'text/xml');
+    let exoml = '<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n';
+    
+    if (hfUrl) {
+      exoml += `    <Play>${hfUrl}</Play>\n`;
+    } else {
+      console.warn('[Exotel AI Warning]: HF Voice failed, using <Say> fallback.');
+      exoml += `    <Say voice="female" language="en-IN">${greeting}</Say>\n`;
+    }
+    
+    exoml += '    <Hangup/>\n</Response>';
+    
+    console.log(`[Exotel Response]: Sending ExoML (HF=${!!hfUrl})`);
+    res.send(exoml);
+
+  } catch (error) {
+    console.error('[Exotel ExoML Error]:', error);
+    res.status(500).send('Error generating response');
+  }
+};
+
+
 const handleVoiceRespond = async (req, res) => {
+
   const userSpeech = req.body.SpeechResult;
   const callLogId = req.query.callLogId;
   const twimlObj = new twilio.twiml.VoiceResponse();
@@ -171,6 +214,7 @@ const handleVoiceRespond = async (req, res) => {
       // NEW: Generate High-Fidelity Speech via Hugging Face (Kokoro-82M)
       const { generateSpeech } = require('../services/hfService');
       const hfUrl = await generateSpeech(aiResponse);
+      console.log(`[HF Debug] Generated URL: ${hfUrl}`);
 
       // LOG TO SUPABASE
       await supabase.from('ai_logs').insert([{
@@ -243,6 +287,7 @@ const handleVoiceStatus = async (req, res) => {
 };
 
 const sendSMSFallback = async (req, res) => {
+
   const { passengerId, message } = req.body;
   const twilioClient = require('../config/twilio');
 
@@ -286,6 +331,7 @@ module.exports = {
   handleIncomingVoice,
   handleVoiceRespond,
   handleVoiceStatus,
+  handleExotelVoice,
   sendSMSFallback,
   getAILogs,
   notifyJourneyLogic

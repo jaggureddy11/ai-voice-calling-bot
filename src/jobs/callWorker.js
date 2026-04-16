@@ -27,6 +27,8 @@ const worker = new Worker('callNotifications', async job => {
     // NEW: Use Premium HF Voice for Initial Greeting
     const { generateSpeech } = require('../services/hfService');
     const hfUrl = await generateSpeech(message);
+    console.log(`[Worker HF Debug] Generated URL: ${hfUrl}`);
+
 
     // Make the call conversational by adding a Gather block
     const gather = twimlObj.gather({

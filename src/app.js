@@ -35,7 +35,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', service: 'BoardPing API' });
 });
 
-app.listen(port, () => {
-  console.log(`BoardPing API is running on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`BoardPing API is running on http://0.0.0.0:${port}`);
   console.log('Worker is listening for call jobs from Redis...');
 });

@@ -49,7 +49,14 @@ router.post(
   callController.handleVoiceStatus
 );
 
+// Telnyx / Exotel Webhook Endpoint
+router.get('/exotel/voice', callController.handleExotelVoice);
+router.post('/exotel/voice', callController.handleExotelVoice);
+
 // SMS Fallback Endpoint
+
+
+
 router.post('/sms-fallback', callController.sendSMSFallback);
 
 // AI Interaction Logs Endpoint
