@@ -12,10 +12,14 @@ const {
   twilioStatusCallbackSchema
 } = require('../schemas');
 
+// Entity Discovery Endpoints
+router.get('/operators', callController.getOperators);
+router.get('/agencies', callController.getAgencies);
+router.get('/buses', callController.getBuses);
+
 // Passenger Management Endpoints
 router.get(
-  '/passengers/:journeyId', 
-  validate(journeyTriggerParamsSchema, 'params'), 
+  '/passengers/:busId', 
   callController.getPassengers
 );
 
@@ -25,9 +29,14 @@ router.post(
   callController.addPassenger
 );
 
+router.patch(
+  '/passengers/:passengerId/board', 
+  callController.toggleBoardingStatus
+);
+
 // Trigger endpoint
 router.post(
-  '/notify-journey', 
+  '/notify-bus', 
   validate(journeyTriggerBodySchema), 
   callController.notifyJourney
 );

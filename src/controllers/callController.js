@@ -2,8 +2,34 @@ const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
 const aiService = require('../services/aiService');
 
+const getOperators = async (req, res) => {
+  const { data, error } = await supabase.from('operators').select('*').order('name');
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json(data || []);
+};
+
+const getAgencies = async (req, res) => {
+  const { operatorId } = req.query;
+  let query = supabase.from('agencies').select('*');
+  if (operatorId) query = query.eq('operator_id', operatorId);
+  
+  const { data, error } = await query.order('name');
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json(data || []);
+};
+
+const getBuses = async (req, res) => {
+  const { agencyId } = req.query;
+  let query = supabase.from('buses').select('*');
+  if (agencyId) query = query.eq('agency_id', agencyId);
+  
+  const { data, error } = await query.order('time');
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json(data || []);
+};
+
 const getPassengers = async (req, res) => {
-  const { journeyId } = req.params;
+  const { busId } = req.params;
   const { data, error } = await supabase
     .from('passengers')
     .select(`
@@ -11,7 +37,10 @@ const getPassengers = async (req, res) => {
       name, 
       phone, 
       boarding_point, 
+      seat_no,
       time, 
+      is_boarded,
+      call_status,
       call_logs ( 
         status, 
         created_at, 
@@ -21,30 +50,24 @@ const getPassengers = async (req, res) => {
         is_flagged
       )
     `)
-    .eq('journey_id', journeyId)
-    .order('id', { ascending: false });
+    .eq('bus_id', busId)
+    .order('created_at', { ascending: true });
 
   if (error) return res.status(500).json({ error: error.message });
   res.status(200).json(data || []);
 };
 
 const addPassenger = async (req, res) => {
-  const { journey_id, name, phone, boarding_point, time, language } = req.body;
+  const { bus_id, name, phone, boarding_point, seat_no, time, language } = req.body;
   
-  // Upsert the journey dynamically to completely prevent Foreign Key constraint errors
-  await supabase.from('journeys').upsert([{ 
-    id: journey_id, 
-    route: 'Dynamic Terminal Route', 
-    departure_time: time 
-  }], { onConflict: 'id' });
-
+  // Use bus_id for linking
   const { data, error } = await supabase
     .from('passengers')
-    .insert([{ journey_id, name, phone, boarding_point, time, language }])
+    .insert([{ bus_id, name, phone, boarding_point, seat_no, time, language }])
     .select();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json(data);
+  res.status(201).json(data[0]);
 };
 
 const notifyJourney = async (req, res) => {
@@ -313,21 +336,28 @@ const sendSMSFallback = async (req, res) => {
   }
 };
 
-const getAILogs = async (req, res) => {
+const toggleBoardingStatus = async (req, res) => {
+  const { passengerId } = req.params;
+  const { is_boarded } = req.body;
+  
   const { data, error } = await supabase
-    .from('ai_logs')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(20);
+    .from('passengers')
+    .update({ is_boarded })
+    .eq('id', passengerId)
+    .select();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json(data || []);
+  res.status(200).json(data[0]);
 };
 
 module.exports = {
+  getOperators,
+  getAgencies,
+  getBuses,
   getPassengers,
   addPassenger,
   notifyJourney,
+  toggleBoardingStatus,
   handleIncomingVoice,
   handleVoiceRespond,
   handleVoiceStatus,

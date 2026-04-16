@@ -70,13 +70,9 @@ const passengerSchema = z.object({
 
   phone: indianPhoneSchema,
 
-  journey_id: z
-    .string({ required_error: 'Journey ID is required' })
-    // In our existing app, journey_id is often a string like 'VRL-123-DYN', not always a UUID.
-    // However, the provided schemas use UUID. Let's see if we should relax it.
-    // The existing app's app.js uses: `document.getElementById('trip-id').value = `${op}-${Math.floor(Math.random() * 900) + 100}-DYN`;`
-    // So it's NOT a UUID.
-    .min(3, 'Journey ID must be at least 3 characters'),
+  bus_id: z
+    .string({ required_error: 'Bus ID is required' })
+    .min(3, 'Bus ID must be at least 3 characters'),
 
   boarding_point: z
     .string({ required_error: 'Boarding point is required' })
@@ -108,9 +104,9 @@ const passengerSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const bulkPassengerSchema = z.object({
-  journey_id: z
-    .string({ required_error: 'Journey ID is required' })
-    .min(3, 'Journey ID must be at least 3 characters'),
+  bus_id: z
+    .string({ required_error: 'Bus ID is required' })
+    .min(3, 'Bus ID must be at least 3 characters'),
 
   passengers: z
     .array(
@@ -137,7 +133,7 @@ const bulkPassengerSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const passengerQuerySchema = z.object({
-  journey_id: z.string().min(3).optional(),
+  bus_id: z.string().min(3).optional(),
 
   status: z
     .enum(['pending', 'initiated', 'ringing', 'in-progress', 'completed', 'failed', 'no-answer', 'busy'])

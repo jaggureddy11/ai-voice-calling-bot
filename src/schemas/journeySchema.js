@@ -51,9 +51,9 @@ const journeySchema = z.object({
 // ---------------------------------------------------------------------------
 
 const journeyTriggerParamsSchema = z.object({
-  journeyId: z
-    .string({ required_error: 'Journey ID is required' })
-    .min(3, 'Journey ID is too short'),
+  busId: z
+    .string({ required_error: 'Bus ID is required' })
+    .min(3, 'Bus ID is too short'),
 });
 
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ const journeyTriggerParamsSchema = z.object({
 
 const journeyTriggerBodySchema = z
   .object({
-    journeyId: z.string({ required_error: 'journeyId is required' }).min(3),
+    busId: z.string({ required_error: 'busId is required' }).min(3),
     
     // Lets an operator override the auto-generated message for one specific blast
     message_override: z

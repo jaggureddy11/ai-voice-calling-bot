@@ -1,37 +1,27 @@
-// --- DATA MOCKUPS ---
-const operators = [
-    { id: 'abhibus', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
-    { id: 'redbus', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
-    { id: 'cleartrip', name: 'Cleartrip', tag: 'Premium', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6a/db/5f/6adb5f7d-b581-202b-2e95-5b0b79e3cc91/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg' },
-    { id: 'goibibo', name: 'Goibibo', tag: 'Popular', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/22/08/9c/22089c0f-7ae0-fc05-85fc-f3308649c21d/appIconSet-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg' }
-];
+// --- CONFIGURATION ---
+const API_BASE = 'http://localhost:3000/api/calls';
 
-const agencies = [
-    { id: 'vrl', name: 'VRL Travels', routeCount: 145, rating: '4.8', opId: 'abhibus' },
-    { id: 'srs', name: 'SRS Travels', routeCount: 89, rating: '4.5', opId: 'abhibus' },
-    { id: 'laars', name: "Laar's Travels", routeCount: 34, rating: '4.9', opId: 'abhibus' },
-    { id: 'kukeshri', name: 'Kukeshri Travels', routeCount: 56, rating: '4.2', opId: 'redbus' },
-    { id: 'nagashree', name: 'Nagashree Travels', routeCount: 42, rating: '4.6', opId: 'redbus' }
-];
-
-const buses = [
-    { id: 'bus1', number: 'KA 01 AB 1234', agencyId: 'vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
-    { id: 'bus2', number: 'KA 04 VTR 5566', agencyId: 'vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' },
-    { id: 'bus3', number: 'MH 12 XY 9988', agencyId: 'vrl', route: 'MUM → GOA', time: '18:00', status: 'completed' },
-];
-
-let passengers = [
-    { id: 'p1', name: 'Jaggu Reddy', phone: '+91 9876543210', pickup: 'Majestic', seat: 'L4', boarded: false, callStatus: 'pending' },
-    { id: 'p2', name: 'Ankita Sharma', phone: '+91 9988776655', pickup: 'Madiwala', seat: 'U2', boarded: true, callStatus: 'success' },
-    { id: 'p3', name: 'Rahul Verma', phone: '+91 8877665544', pickup: 'Silk Board', seat: 'L1', boarded: false, callStatus: 'failed' }
-];
+// --- STATE MANAGEMENT ---
+let operators = [];
+let agencies = [];
+let buses = [];
+let passengers = [];
 
 let activeOperator = null;
 let activeAgency = null;
 let activeBus = null;
 
 // --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch initial data
+    try {
+        const opRes = await fetch(`${API_BASE}/operators`);
+        operators = await opRes.json();
+    } catch (e) {
+        console.error('Failed to fetch operators', e);
+        showToast('System Offline: Check Backend Connection', 'danger');
+    }
+
     const isLanded = localStorage.getItem('boardly_landed');
     if (isLanded === 'true') {
         document.getElementById('landing-screen').style.display = 'none';
@@ -49,8 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const bread = localStorage.getItem('boardly_bread') || 'Home / Operators';
 
         if(opId) { const op = operators.find(x => x.id === opId); if(op) selectOperator(op, true); }
-        if(agId) { const ag = agencies.find(x => x.id === agId); if(ag) selectAgency(ag, true); }
-        if(busId) { const bus = buses.find(x => x.id === busId); if(bus) selectBus(bus, true); }
+        if(agId) { 
+            // We need to fetch agencies because they are dynamic now
+            const agRes = await fetch(`${API_BASE}/agencies?operatorId=${opId}`);
+            agencies = await agRes.json();
+            const ag = agencies.find(x => x.id === agId); 
+            if(ag) selectAgency(ag, true); 
+        }
+        if(busId) { 
+            // Fetch buses
+            const busRes = await fetch(`${API_BASE}/buses?agencyId=${agId}`);
+            buses = await busRes.json();
+            const bus = buses.find(x => x.id === busId); 
+            if(bus) selectBus(bus, true); 
+        }
 
         navigate(viewId, title, bread, true);
         
@@ -156,16 +158,24 @@ function renderOperators() {
     });
 }
 
-function selectOperator(op, skipNav = false) {
+async function selectOperator(op, skipNav = false) {
     activeOperator = op;
-    // Filter agencies
-    const opAgencies = agencies.filter(a => a.opId === op.id || a.opId === 'abhibus'); // showing fallback for UI population
+    
+    // Fetch agencies dynamically from Supabase
+    try {
+        const res = await fetch(`${API_BASE}/agencies?operatorId=${op.id}`);
+        agencies = await res.json();
+    } catch (e) {
+        showToast('Failed to load agencies', 'danger');
+        return;
+    }
+
     const grid = document.getElementById('agencies-grid');
     grid.innerHTML = '';
     
     document.getElementById('agency-provider-title').innerText = `${op.name} Partners`;
     
-    opAgencies.forEach(ag => {
+    agencies.forEach(ag => {
          const card = document.createElement('div');
          card.className = 'premium-panel agency-card';
          card.onclick = () => selectAgency(ag);
@@ -174,7 +184,7 @@ function selectOperator(op, skipNav = false) {
             <div class="ag-icon"><i class="ri-building-4-line"></i></div>
             <div class="ag-info">
                 <h4>${ag.name}</h4>
-                <p>${ag.routeCount} Active Routes • ⭐ ${ag.rating}</p>
+                <p>${ag.route_count || ag.routeCount} Active Routes • ⭐ ${ag.rating}</p>
             </div>
          `;
          grid.appendChild(card);
@@ -183,8 +193,18 @@ function selectOperator(op, skipNav = false) {
     if(!skipNav) navigate('view-agencies', `Select Agency`, `Home / ${op.name} / Agencies`);
 }
 
-function selectAgency(ag, skipNav = false) {
+async function selectAgency(ag, skipNav = false) {
     activeAgency = ag;
+
+    // Fetch buses dynamically from Supabase
+    try {
+        const res = await fetch(`${API_BASE}/buses?agencyId=${ag.id}`);
+        buses = await res.json();
+    } catch (e) {
+        showToast('Failed to load buses', 'danger');
+        return;
+    }
+
     const grid = document.getElementById('buses-list');
     grid.innerHTML = '';
     document.getElementById('bus-agency-title').innerText = `${ag.name} Fleet`;
@@ -213,39 +233,52 @@ function selectAgency(ag, skipNav = false) {
     if(!skipNav) navigate('view-buses', `Active Fleet`, `Home / Agencies / ${ag.name}`);
 }
 
-function selectBus(bus, skipNav = false) {
+async function selectBus(bus, skipNav = false) {
     activeBus = bus;
     document.getElementById('dash-bus-no').innerText = bus.number;
     document.getElementById('dash-route').innerHTML = `${bus.route} | <span id="dash-time">${bus.time}</span>`;
     
-    renderPassengers();
+    await renderPassengers();
     if(!skipNav) navigate('view-bus-dashboard', `Fleet Control`, `Home / Buses / ${bus.number}`);
 }
 
-function renderPassengers() {
+async function renderPassengers() {
     const tbody = document.getElementById('passengers-tbody');
     tbody.innerHTML = '';
+    
+    if (!activeBus) return;
+
+    // Fetch passengers dynamically from Supabase
+    try {
+        const res = await fetch(`${API_BASE}/passengers/${activeBus.id}`);
+        passengers = await res.json();
+    } catch (e) {
+        showToast('Failed to load passengers', 'danger');
+        return;
+    }
     
     passengers.forEach(p => {
         const tr = document.createElement('tr');
         
         // Call status badge
         let callBadge = '';
-        if(p.callStatus === 'success') callBadge = `<span class="badge-pill bg-success">Connected</span>`;
-        if(p.callStatus === 'pending') callBadge = `<span class="badge-pill bg-info">Pending</span>`;
-        if(p.callStatus === 'failed')  callBadge = `<span class="badge-pill bg-danger">Failed</span>`;
-        
+        const status = p.call_status || 'pending';
+        if(status === 'success' || status === 'completed') callBadge = `<span class="badge-pill bg-success">Connected</span>`;
+        if(status === 'pending' || status === 'queued' || status === 'initiated') callBadge = `<span class="badge-pill bg-info">Pending</span>`;
+        if(['failed', 'busy', 'no-answer', 'canceled'].includes(status))  callBadge = `<span class="badge-pill bg-danger">Failed</span>`;
+        if(!callBadge) callBadge = `<span class="badge-pill bg-info">${status.toUpperCase()}</span>`;
+
         // Boarding toggle
-        let boardToggle = p.boarded ? 
+        let boardToggle = p.is_boarded ? 
             `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-success" style="cursor:pointer; border:none;">Boarded</button>` : 
             `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-warning" style="cursor:pointer; border:none;">Waiting</button>`;
 
         tr.innerHTML = `
             <td>
-                <span class="p-name">${p.name} (Seat: ${p.seat})</span>
+                <span class="p-name">${p.name} (Seat: ${p.seat_no || 'N/A'})</span>
                 <span class="p-contact">${p.phone}</span>
             </td>
-            <td>${p.pickup}</td>
+            <td>${p.boarding_point || 'N/A'}</td>
             <td>${boardToggle}</td>
             <td id="call-status-${p.id}">${callBadge}</td>
             <td>
@@ -261,54 +294,63 @@ function renderPassengers() {
 
 // --- ACTIONS & INTERACTIONS ---
 
-function toggleBoard(id) {
+async function toggleBoard(id) {
+    if (!activeBus) return;
     const p = passengers.find(x => x.id === id);
     if(p) {
-        p.boarded = !p.boarded;
-        renderPassengers();
-        showToast(`Status updated for ${p.name}`, 'success');
+        const newStatus = !p.is_boarded;
+        try {
+            await fetch(`${API_BASE}/passengers/${id}/board`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_boarded: newStatus })
+            });
+            p.is_boarded = newStatus;
+            await renderPassengers();
+            showToast(`Status updated for ${p.name}`, 'success');
+        } catch (e) {
+            showToast('Failed to sync status', 'danger');
+        }
     }
 }
 
-function initiateSingleCall(id, btnElement) {
+async function initiateSingleCall(id, btnElement) {
+    if (!activeBus) return;
     const p = passengers.find(x => x.id === id);
     if(!p) return;
     
     // UI Update
     btnElement.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
     p.callStatus = 'pending';
-    renderPassengers();
-    showToast(`Calling ${p.name}...`, 'info');
-    
-    // Simulate call
-    setTimeout(() => {
-        p.callStatus = Math.random() > 0.3 ? 'success' : 'failed';
-        renderPassengers();
-        
-        if(p.callStatus === 'success') {
-            showToast(`${p.name} confirmed boarding.`, 'success');
-        } else {
-            showToast(`${p.name} did not answer.`, 'danger');
-        }
-    }, 2500);
+    // No real single call endpoint yet, but we use notify-bus with specific seat
+    try {
+        await fetch(`${API_BASE}/notify-bus`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busId: activeBus.id, seat_numbers: [p.seat_no] })
+        });
+        showToast(`Calling ${p.name}...`, 'info');
+        // Refresh after some delay to see queued status
+        setTimeout(() => renderPassengers(), 2000);
+    } catch (e) {
+        showToast('Failed to trigger call', 'danger');
+    }
 }
 
-function triggerAutoCall() {
+async function triggerAutoCall() {
+    if (!activeBus) return;
     showToast(`Initiating smart wave calls to all waiting passengers...`, 'info');
     
-    // Simulate batch processing
-    passengers.forEach((p, idx) => {
-        if(!p.boarded) {
-            setTimeout(() => {
-                p.callStatus = 'pending';
-                renderPassengers();
-                setTimeout(() => {
-                    p.callStatus = Math.random() > 0.2 ? 'success' : 'failed';
-                    renderPassengers();
-                }, 2000 + (Math.random() * 2000));
-            }, idx * 800);
-        }
-    });
+    try {
+        await fetch(`${API_BASE}/notify-bus`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ busId: activeBus.id })
+        });
+        setTimeout(() => renderPassengers(), 1000);
+    } catch (e) {
+        showToast('Failed to trigger batch calls', 'danger');
+    }
 }
 
 // --- MODALS ---
@@ -323,24 +365,39 @@ function closeModal(id) {
     document.getElementById('modal-backdrop').classList.remove('active');
 }
 
-function savePassenger() {
+async function savePassenger() {
+    if (!activeBus) return showToast("No active bus selected", "danger");
+    
     const name = document.getElementById('p-name').value;
     const phone = document.getElementById('p-phone').value;
-    const pickup = document.getElementById('p-loc').value;
-    const seat = document.getElementById('p-seat').value;
+    const boarding_point = document.getElementById('p-loc').value;
+    const seat_no = document.getElementById('p-seat').value;
     
     if(!name || !phone) return showToast("Name and Phone are required", "danger");
     
-    passengers.push({
-        id: 'p' + Date.now(),
-        name, phone, pickup, seat,
-        boarded: false, callStatus: 'pending'
-    });
-    
-    closeModal('add-passenger-modal');
-    document.getElementById('passenger-form').reset();
-    renderPassengers();
-    showToast("Passenger added successfully.", "success");
+    try {
+        const res = await fetch(`${API_BASE}/passengers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bus_id: activeBus.id,
+                name, phone, boarding_point, seat_no,
+                time: activeBus.time
+            })
+        });
+
+        if (res.ok) {
+            closeModal('add-passenger-modal');
+            document.getElementById('passenger-form').reset();
+            await renderPassengers();
+            showToast("Passenger added and synced to Supabase.", "success");
+        } else {
+            const err = await res.json();
+            showToast(err.error || "Save failed", "danger");
+        }
+    } catch (e) {
+        showToast("Network Error: Could not reach Supabase Sync Engine", "danger");
+    }
 }
 
 function handleOCRUpload() {
