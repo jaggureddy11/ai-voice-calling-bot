@@ -24,6 +24,10 @@ const worker = new Worker('callNotifications', async job => {
 
     const twimlObj = new twilioClient.twiml.VoiceResponse();
     
+    // NEW: Use Premium HF Voice for Initial Greeting
+    const { generateSpeech } = require('../services/hfService');
+    const hfUrl = await generateSpeech(message);
+
     // Make the call conversational by adding a Gather block
     const gather = twimlObj.gather({
       input: 'speech',
@@ -32,7 +36,12 @@ const worker = new Worker('callNotifications', async job => {
       language: language || 'en-IN'
     });
 
-    gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
+    if (hfUrl) {
+      gather.play(hfUrl);
+    } else {
+      gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
+    }
+
 
     // Update Supabase with attempt count increment
     if (callLogId) {

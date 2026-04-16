@@ -168,6 +168,10 @@ const handleVoiceRespond = async (req, res) => {
       const { intent, response: aiResponse } = await aiService.analyzeIntent(userSpeech, passengerLanguage);
       console.log(`[Intent]: ${intent} -> [AI Response]: ${aiResponse}`);
 
+      // NEW: Generate High-Fidelity Speech via Hugging Face (Kokoro-82M)
+      const { generateSpeech } = require('../services/hfService');
+      const hfUrl = await generateSpeech(aiResponse);
+
       // LOG TO SUPABASE
       await supabase.from('ai_logs').insert([{
         call_log_id: callLogId,
@@ -193,7 +197,14 @@ const handleVoiceRespond = async (req, res) => {
         language: passengerLanguage
       });
       
-      gather.say({ voice: 'Polly.Aditi', language: passengerLanguage }, aiResponse);
+      if (hfUrl) {
+        // Use the premium Hugging Face voice
+        gather.play(hfUrl);
+      } else {
+        // Fallback to Twilio standard
+        gather.say({ voice: 'Polly.Aditi', language: passengerLanguage }, aiResponse);
+      }
+
 
     res.set('Content-Type', 'text/xml');
     res.send(twimlObj.toString());

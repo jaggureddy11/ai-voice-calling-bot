@@ -6,9 +6,13 @@ const morgan = require('morgan');
 // Start the worker to process queued jobs
 require('./jobs/callWorker'); 
 
-// Start the autonomous journey scheduler
+// Start the autonomous journey scheduler & voice cache cleanup
 const { startJourneyScheduler } = require('./jobs/journeyScheduler');
+const { cleanupVoiceCache } = require('./services/voiceCacheCleanup');
+
 startJourneyScheduler();
+cleanupVoiceCache(); // Initial run
+
 
 const routes = require('./routes/index');
 
@@ -19,7 +23,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 app.use(morgan('dev'));
+
 
 // Routes
 app.use('/api/calls', routes);
