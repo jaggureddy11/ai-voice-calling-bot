@@ -26,8 +26,38 @@ let passengers = [
     { id: 'p3', name: 'Rahul Verma', phone: '+91 8877665544', pickup: 'Silk Board', seat: 'L1', boarded: false, callStatus: 'failed' }
 ];
 
+let activeOperator = null;
+let activeAgency = null;
+let activeBus = null;
+
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+    const isLanded = localStorage.getItem('boardly_landed');
+    if (isLanded === 'true') {
+        document.getElementById('landing-screen').style.display = 'none';
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('visible');
+        
+        renderOperators();
+        initChart();
+
+        const opId = localStorage.getItem('boardly_op_id');
+        const agId = localStorage.getItem('boardly_ag_id');
+        const busId = localStorage.getItem('boardly_bus_id');
+        const viewId = localStorage.getItem('boardly_viewId') || 'view-operators';
+        const title = localStorage.getItem('boardly_title') || 'Select Operator';
+        const bread = localStorage.getItem('boardly_bread') || 'Home / Operators';
+
+        if(opId) { const op = operators.find(x => x.id === opId); if(op) selectOperator(op, true); }
+        if(agId) { const ag = agencies.find(x => x.id === agId); if(ag) selectAgency(ag, true); }
+        if(busId) { const bus = buses.find(x => x.id === busId); if(bus) selectBus(bus, true); }
+
+        navigate(viewId, title, bread, true);
+        
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        const activeNavBtn = document.querySelector(`.nav-btn[data-target="${viewId}"]`);
+        if(activeNavBtn) activeNavBtn.classList.add('active');
+    }
     // 1. Landing Screen Logic
     const enterBtn = document.getElementById('enter-btn');
     if(enterBtn) {
@@ -38,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 document.getElementById('landing-screen').classList.add('fade-out');
                 setTimeout(() => {
+                    localStorage.setItem('boardly_landed', 'true');
                     document.getElementById('landing-screen').style.display = 'none';
                     document.getElementById('app-container').classList.remove('hidden');
                     // slight delay for animation
@@ -82,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- NAVIGATION LOGIC ---
-function navigate(viewId, title, breadcrumbs) {
+function navigate(viewId, title, breadcrumbs, skipStateStore = false) {
     // Hide all views
     document.querySelectorAll('.view-section').forEach(v => {
         v.classList.remove('active');
@@ -94,6 +125,15 @@ function navigate(viewId, title, breadcrumbs) {
     // Update Header
     document.getElementById('header-title').innerText = title;
     document.getElementById('header-breadcrumbs').innerText = breadcrumbs;
+
+    if(!skipStateStore) {
+        localStorage.setItem('boardly_viewId', viewId);
+        localStorage.setItem('boardly_title', title);
+        localStorage.setItem('boardly_bread', breadcrumbs);
+        if(activeOperator) localStorage.setItem('boardly_op_id', activeOperator.id);
+        if(activeAgency) localStorage.setItem('boardly_ag_id', activeAgency.id);
+        if(activeBus) localStorage.setItem('boardly_bus_id', activeBus.id);
+    }
 }
 
 // --- RENDERERS ---
@@ -116,7 +156,8 @@ function renderOperators() {
     });
 }
 
-function selectOperator(op) {
+function selectOperator(op, skipNav = false) {
+    activeOperator = op;
     // Filter agencies
     const opAgencies = agencies.filter(a => a.opId === op.id || a.opId === 'abhibus'); // showing fallback for UI population
     const grid = document.getElementById('agencies-grid');
@@ -139,10 +180,11 @@ function selectOperator(op) {
          grid.appendChild(card);
     });
     
-    navigate('view-agencies', `Select Agency`, `Home / ${op.name} / Agencies`);
+    if(!skipNav) navigate('view-agencies', `Select Agency`, `Home / ${op.name} / Agencies`);
 }
 
-function selectAgency(ag) {
+function selectAgency(ag, skipNav = false) {
+    activeAgency = ag;
     const grid = document.getElementById('buses-list');
     grid.innerHTML = '';
     document.getElementById('bus-agency-title').innerText = `${ag.name} Fleet`;
@@ -168,17 +210,16 @@ function selectAgency(ag) {
         grid.appendChild(item);
     });
     
-    navigate('view-buses', `Active Fleet`, `Home / Agencies / ${ag.name}`);
+    if(!skipNav) navigate('view-buses', `Active Fleet`, `Home / Agencies / ${ag.name}`);
 }
 
-let activeBus = null;
-function selectBus(bus) {
+function selectBus(bus, skipNav = false) {
     activeBus = bus;
     document.getElementById('dash-bus-no').innerText = bus.number;
     document.getElementById('dash-route').innerHTML = `${bus.route} | <span id="dash-time">${bus.time}</span>`;
     
     renderPassengers();
-    navigate('view-bus-dashboard', `Fleet Control`, `Home / Buses / ${bus.number}`);
+    if(!skipNav) navigate('view-bus-dashboard', `Fleet Control`, `Home / Buses / ${bus.number}`);
 }
 
 function renderPassengers() {
