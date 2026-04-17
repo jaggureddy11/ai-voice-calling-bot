@@ -335,10 +335,13 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     
     /* Top Header Positioning Fix */
     .top-header { flex-direction: column; align-items: flex-start; gap: 20px; position: relative; padding: 20px 20px 10px 20px; }
-    .header-actions { position: relative; top: auto; right: auto; width: 100%; gap: 15px; justify-content: flex-start; flex-wrap: wrap;}
+    .header-actions { position: static; width: 100%; display: block; }
+    .header-actions .btn-icon { position: absolute; top: 20px; right: 80px; }
+    .header-actions .user-profile-header { position: absolute; top: 20px; right: 20px; }
+    .header-titles { padding-right: 120px; } /* prevent text overlap with abs pos buttons */
     .search-box { width: 100%; }
     .search-box input { width: 100%; }
-    .header-title { font-size: 2rem; }
+    .header-title { font-size: 1.8rem; }
     
     .grid-cards { grid-template-columns: 1fr 1fr; gap: 15px; }
     .grid-cards-small { grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -364,7 +367,9 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     .modal-header { padding: 25px; }
     .views-wrapper { padding: 0 15px 15px 15px; }
     .top-header { padding: 20px 15px 15px 15px; }
-    .header-title { font-size: 1.8rem; }
+    .header-title { font-size: 1.6rem; }
+    .header-actions .btn-icon { right: 70px; }
+    .header-actions .user-profile-header { right: 15px; }
     
     /* Panel Layout Adjustments */
     .bus-meta-card { padding: 25px 20px; }
