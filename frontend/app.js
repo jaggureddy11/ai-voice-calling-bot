@@ -1,18 +1,40 @@
 // --- CONFIGURATION ---
 const API_BASE = 'http://localhost:3000/api/calls';
 
-// --- EFFECTS & EASTER EGGS ---
 function honkHorn() {
-    const hornAudio = new Audio('https://actions.google.com/sounds/v1/transportation/truck_horn.ogg');
-    hornAudio.volume = 0.4;
-    hornAudio.play().catch(e => console.log("Audio playback blocked by browser"));
+    // 1. Native Web Audio Synthesis (No external URLs blocking or failing)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
 
-    // Flashing the headlights high-beam
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(150, audioCtx.currentTime); // Deep tone
+    
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(180, audioCtx.currentTime); // Slightly dissonant high tone
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05); // Attack
+    gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.3); // Sustain
+    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5); // Decay
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(audioCtx.currentTime + 0.6);
+    osc2.stop(audioCtx.currentTime + 0.6);
+
+    // 2. Headlight High-Beams Flashing Effect
     const headlights = document.querySelectorAll('.headlight-beam');
     headlights.forEach(hl => {
         const oldFilter = hl.style.filter;
         hl.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 1)) scale(1.1)';
-        setTimeout(() => { hl.style.filter = oldFilter; }, 400);
+        setTimeout(() => { hl.style.filter = oldFilter; }, 500);
     });
 }
 
