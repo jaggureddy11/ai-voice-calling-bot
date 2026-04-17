@@ -40,7 +40,8 @@ body {
 /* 1. LANDING SCREEN */
 .landing-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 10vh;
     background: #000000; /* Pure black background */
     z-index: 100;
     transition: opacity 1s ease, visibility 1s;
