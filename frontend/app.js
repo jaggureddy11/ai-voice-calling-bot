@@ -2,42 +2,10 @@
 const API_BASE = 'http://localhost:3000/api/calls';
 
 function honkHorn() {
-    // 1. Hyper-Realistic K5LA Transit Air Horn Synthesis
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // The Nathan K5LA is the standard heavy transit air horn.
-    // It utilizes a complex chord of 5 dissonant metallic bells to get that iconic massive blast.
-    const chordFrequencies = [311.13, 370.00, 415.30, 493.88, 622.25]; // D#4, F#4, G#4, B4, D#5
-    const duration = 0.8;
-
-    chordFrequencies.forEach((freq) => {
-        const osc = audioCtx.createOscillator();
-        const filter = audioCtx.createBiquadFilter();
-        const gainNode = audioCtx.createGain();
-
-        // Sawtooth provides that buzzy, brassy physical tone
-        osc.type = 'sawtooth';
-        // Add extremely slight random detuning for that physical "air pressure" variance
-        osc.frequency.value = freq + (Math.random() * 2 - 1); 
-
-        // Cut out the piercing synthetic highs and muddy lows to make it sound like a brass bell
-        filter.type = 'bandpass';
-        filter.frequency.value = 500; 
-        filter.Q.value = 1.2;
-
-        // Punchy air blast envelope
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.05); // Initial slam
-        gainNode.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + duration - 0.2); // Sustain
-        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + duration); // Air decay
-
-        osc.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    });
+    // 1. Play real MP3 local audio file
+    const realHornAudio = new Audio('truck-horn.mp3');
+    realHornAudio.volume = 0.6;
+    realHornAudio.play().catch(e => console.log("Audio playback blocked by browser"));
 
     // 2. Headlight High-Beams Flashing Effect
     const headlights = document.querySelectorAll('.headlight-beam');
