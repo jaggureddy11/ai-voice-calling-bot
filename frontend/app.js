@@ -4,7 +4,7 @@ const API_BASE = 'http://localhost:3000/api/calls';
 function honkHorn() {
     // 1. Play real MP3 local audio file
     const realHornAudio = new Audio('truck-horn.mp3');
-    realHornAudio.volume = 0.6;
+    realHornAudio.volume = 1.0;
     realHornAudio.play().catch(e => console.log("Audio playback blocked by browser"));
 
     // 2. Headlight High-Beams Flashing Effect
