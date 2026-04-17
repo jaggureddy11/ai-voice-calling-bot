@@ -175,7 +175,7 @@ body {
 }
 .landing-content { 
     position: absolute;
-    top: 8vh;
+    top: 5vh;
     left: 50%;
     transform: translateX(-50%);
     text-align: center; 
