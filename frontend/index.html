@@ -21,9 +21,98 @@
 
     <!-- 1. Landing Screen -->
     <div id="landing-screen" class="landing-screen">
-        <div class="landing-content">
+        <div class="landing-grid-overlay"></div>
+
+        <!-- Background Parallax Bus -->
+        <div class="bus-animation-wrapper bus-bg">
+            <svg viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg" class="hero-bus-svg">
+                <!-- Energy Trail -->
+                <path d="M 10 95 L -100 95" stroke="rgba(255,255,255,0.6)" stroke-width="4" stroke-dasharray="20,10"
+                    class="energy-trail" />
+                <path d="M 10 85 L -50 85" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-dasharray="10,5"
+                    class="energy-trail-fast" />
+
+                <!-- Autonomous Bus Body -->
+                <rect x="10" y="30" width="380" height="90" rx="15" fill="none" stroke="#ffffff" stroke-width="2" />
+                <rect x="40" y="45" width="280" height="35" rx="5" fill="rgba(255,255,255,0.02)" stroke="#ffffff"
+                    stroke-width="1.5" />
+                <line x1="110" y1="45" x2="110" y2="80" stroke="#ffffff" stroke-width="1.5" />
+                <line x1="180" y1="45" x2="180" y2="80" stroke="#ffffff" stroke-width="1.5" />
+                <line x1="250" y1="45" x2="250" y2="80" stroke="#ffffff" stroke-width="1.5" />
+
+                <!-- Autonomous Lidar/Sensors -->
+                <path d="M 60 30 L 70 20 L 90 20 L 100 30" fill="none" stroke="#ffffff" stroke-width="1.5" />
+                <path d="M 320 30 L 330 22 L 350 22 L 360 30" fill="none" stroke="#ffffff" stroke-width="1.5" />
+
+                <!-- Wheels -->
+                <circle cx="80" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="2" />
+                <circle cx="80" cy="120" r="4" fill="#ffffff" />
+                <circle cx="320" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="2" />
+                <circle cx="320" cy="120" r="4" fill="#ffffff" />
+
+                <path d="M 390 50 Q 400 70 390 110" fill="none" stroke="#ffffff" stroke-width="1.5" />
+                <line x1="390" y1="95" x2="400" y2="95" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+
+                <text x="200" y="105" font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="#ffffff"
+                    letter-spacing="5" text-anchor="middle">BOARDPING ELITE</text>
+            </svg>
+        </div>
+
+        <!-- Foreground Primary Bus -->
+        <div class="bus-animation-wrapper bus-fg">
+            <svg viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg" class="hero-bus-svg">
+                <!-- Energy Trail -->
+                <path d="M 10 95 L -150 95" stroke="rgba(255,255,255,0.8)" stroke-width="6" stroke-dasharray="30,15"
+                    class="energy-trail" />
+                <path d="M 10 85 L -80 85" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-dasharray="15,10"
+                    class="energy-trail-fast" />
+                <path d="M 10 105 L -60 105" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-dasharray="10,5"
+                    class="energy-trail" />
+
+                <!-- Autonomous Bus Body -->
+                <rect x="10" y="30" width="380" height="90" rx="15" fill="rgba(0,0,0,0.4)" stroke="#ffffff"
+                    stroke-width="3" />
+
+                <!-- Windows with Glass Effect -->
+                <rect x="40" y="45" width="280" height="35" rx="5" fill="rgba(255,255,255,0.08)" stroke="#ffffff"
+                    stroke-width="2" />
+                <line x1="110" y1="45" x2="110" y2="80" stroke="#ffffff" stroke-width="2" />
+                <line x1="180" y1="45" x2="180" y2="80" stroke="#ffffff" stroke-width="2" />
+                <line x1="250" y1="45" x2="250" y2="80" stroke="#ffffff" stroke-width="2" />
+
+                <!-- Lidar / Cyber Sensors -->
+                <path d="M 60 30 L 70 18 L 90 18 L 100 30" fill="none" stroke="#ffffff" stroke-width="2.5" />
+                <circle cx="80" cy="18" r="3" fill="#ffffff" class="sensor-pulse" />
+                <path d="M 320 30 L 330 20 L 350 20 L 360 30" fill="none" stroke="#ffffff" stroke-width="2.5" />
+                <circle cx="340" cy="20" r="3" fill="#ffffff" class="sensor-pulse" />
+
+                <!-- Hover Wheels Effect -->
+                <circle cx="80" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="3" />
+                <circle cx="80" cy="120" r="6" fill="#ffffff" />
+                <path d="M 60 138 Q 80 145 100 138" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="3"
+                    stroke-linecap="round" />
+
+                <circle cx="320" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="3" />
+                <circle cx="320" cy="120" r="6" fill="#ffffff" />
+                <path d="M 300 138 Q 320 145 340 138" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="3"
+                    stroke-linecap="round" />
+
+                <!-- Aerodynamic Front & Lights -->
+                <path d="M 390 45 Q 410 70 390 115" fill="none" stroke="#ffffff" stroke-width="3" />
+                <line x1="390" y1="95" x2="410" y2="95" stroke="#ffffff" stroke-width="5" class="headlight-beam"
+                    stroke-linecap="round" />
+
+                <line x1="10" y1="95" x2="-5" y2="95" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+
+                <!-- Elite Branding -->
+                <text x="200" y="105" font-family="'Inter', sans-serif" font-size="12" font-weight="700" fill="#ffffff"
+                    letter-spacing="6" text-anchor="middle">BOARDLY</text>
+            </svg>
+        </div>
+
+        <div class="landing-content" style="z-index: 10; position: relative;">
             <h1 class="landing-logo">Boardly.</h1>
-            <p class="landing-tagline">Exquisite Fleet & Boarding Orchestration</p>
+            <p class="landing-tagline">Smart Passenger & Fleet Management</p>
             <button id="enter-btn" class="btn-primary landing-btn">Enter Dashboard</button>
         </div>
     </div>

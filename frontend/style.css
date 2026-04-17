@@ -44,6 +44,95 @@ body {
     background: var(--bg-dark);
     z-index: 100;
     transition: opacity 1s ease, visibility 1s;
+    overflow: hidden; /* Ensure bus doesn't cause overflow */
+}
+
+/* GRID OVERLAY VIGNETTE */
+.landing-grid-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 1;
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(circle at center, black 10%, transparent 85%);
+    mask-image: radial-gradient(circle at center, black 10%, transparent 85%);
+}
+
+/* PARALLAX BUS ENGINES */
+.bus-animation-wrapper {
+    position: absolute;
+    left: -600px;
+    z-index: 2;
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+.hero-bus-svg {
+    width: 100%; height: auto;
+    animation: busHover 2.5s ease-in-out infinite alternate;
+    overflow: visible;
+}
+
+.bus-bg {
+    top: 35%;
+    width: 300px;
+    opacity: 0.08;
+    filter: blur(2px);
+    animation: busDriveBg 35s linear infinite;
+}
+.bus-bg .hero-bus-svg { animation-delay: -1s; }
+
+.bus-fg {
+    top: 58%;
+    width: 550px;
+    opacity: 0.25;
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+    animation: busDriveFg 18s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes busDriveFg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(100vw + 1200px)); }
+}
+
+@keyframes busDriveBg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(100vw + 1200px)); }
+}
+
+@keyframes busHover {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-12px) rotate(0.3deg); }
+}
+
+/* SVG INTERNALS ANIMATIONS */
+.energy-trail { animation: trailPulse 0.8s linear infinite; }
+.energy-trail-fast { animation: trailPulse 0.4s linear infinite reverse; }
+
+@keyframes trailPulse {
+    0% { stroke-dashoffset: 0; opacity: 1; }
+    100% { stroke-dashoffset: 45; opacity: 0; }
+}
+
+.sensor-pulse { animation: sensorBlink 1.5s ease-in-out infinite alternate; }
+
+@keyframes sensorBlink {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; filter: drop-shadow(0 0 5px white); }
+}
+
+.headlight-beam {
+    filter: drop-shadow(15px 0 12px rgba(255,255,255,0.9));
+    animation: beamFlicker 3s infinite alternate;
+}
+
+@keyframes beamFlicker {
+    0%, 90%, 100% { opacity: 1; }
+    94% { opacity: 0.6; }
+    98% { opacity: 0.9; }
 }
 .landing-screen.fade-out {
     opacity: 0; visibility: hidden;
