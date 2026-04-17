@@ -103,10 +103,10 @@ body {
 }
 
 .bus-fg {
-    bottom: 8vh; /* Position wheels right onto the road */
+    bottom: 4vh; /* Grinds the tires exactly onto the physical asphalt */
     width: 600px;
     opacity: 1; /* Fully solid and realistic */
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); /* Cast dark shadow on road */
+    filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7)); /* Ambient occlusion on road */
     animation: busDriveFg 14s cubic-bezier(0.2, 0, 0.8, 1) infinite;
 }
 
@@ -117,16 +117,7 @@ body {
 
 @keyframes busHover {
     0% { transform: translateY(0px) rotate(0deg); }
-    100% { transform: translateY(-12px) rotate(0.3deg); }
-}
-
-/* SVG INTERNALS ANIMATIONS */
-.energy-trail { animation: trailPulse 0.8s linear infinite; }
-.energy-trail-fast { animation: trailPulse 0.4s linear infinite reverse; }
-
-@keyframes trailPulse {
-    0% { stroke-dashoffset: 0; opacity: 1; }
-    100% { stroke-dashoffset: 45; opacity: 0; }
+    100% { transform: translateY(-3px) rotate(0.1deg); }
 }
 
 .sensor-pulse { animation: sensorBlink 1.5s ease-in-out infinite alternate; }
