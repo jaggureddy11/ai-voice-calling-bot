@@ -15,7 +15,13 @@ function honkHorn() {
         setTimeout(() => { hl.style.filter = oldFilter; }, 500);
     });
 }
-
+function toggleTheme() {
+    const landing = document.getElementById('landing-screen');
+    landing.classList.toggle('light-mode');
+    
+    // Smooth transition message for user feedback (optional but premium)
+    console.log("Theme switched by Moon/Sun interaction");
+}
 // --- STATE MANAGEMENT ---
 let operators = [];
 let agencies = [];

@@ -1,6 +1,7 @@
 /* LUXURY MONOCHROME PALETTE & TYPOGRAPHY */
 :root {
     --bg-dark: #070707;
+    --bg-landing: #000000;
     --bg-panel: #111111;
     --bg-panel-hover: #1a1a1a;
     --border-light: #333333;
@@ -8,16 +9,34 @@
     
     --text-primary: #ffffff;
     --text-muted: #888888;
+    --text-landing: #ffffff;
     
     --primary-action: #ffffff;
     --primary-action-text: #000000;
+
+    --city-bg: #050510;
+    --city-fg-start: #1a1a25;
+    --city-fg-end: #0a0a0c;
     
     --transition-fast: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --transition-smooth: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     
     --radius-lg: 0px; /* Sharp edges for luxury feel */
-    --radius-md: 0px;
-    --radius-sm: 0px;
+}
+
+/* DAYTIME / LIGHT MODE OVERRIDES */
+.light-mode {
+    --bg-dark: #f5f5f7;
+    --bg-landing: #ffffff;
+    --bg-panel: #ffffff;
+    --text-primary: #000000;
+    --text-muted: #666666;
+    --text-landing: #000000;
+    --border-light: #e1e1e1;
+    --city-bg: #cbd5e0;
+    --city-fg-start: #edf2f7;
+    --city-fg-end: #cbd5e0;
+}
 }
 
 /* BASIC RESET */
@@ -42,10 +61,10 @@ body {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     padding-top: 10vh;
-    background: #000000; /* Pure black background */
-    z-index: 100;
-    transition: opacity 1s ease, visibility 1s;
+    background: var(--bg-landing);
+    transition: background 1s ease-in-out, opacity 1s ease, visibility 1s;
     overflow: hidden; 
+    z-index: 100;
 }
 
 /* Animated Background Scenery */
@@ -74,7 +93,7 @@ body {
     opacity: 1; /* Full visibility for foreground */
 }
 
-/* MOON - Realistic textured and glowing */
+/* MOON/SUN - Theme Switcher */
 .moon {
     position: absolute;
     top: 3vh;
@@ -84,13 +103,37 @@ body {
     background: #e1e1e1;
     border-radius: 50%;
     z-index: 1;
-    /* Realistic Moon Texture (Craters and variation) */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3CradialGradient id='dg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23bbb'/%3E%3Cstop offset='100%25' stop-color='%23999'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='40' r='10' fill='url(%23dg)' opacity='0.5'/%3E%3Ccircle cx='70' cy='30' r='16' fill='url(%23dg)' opacity='0.3'/%3E%3Ccircle cx='80' cy='70' r='8' fill='url(%23dg)' opacity='0.4'/%3E%3Ccircle cx='40' cy='90' r='12' fill='url(%23dg)' opacity='0.2'/%3E%3Ccircle cx='90' cy='90' r='6' fill='url(%23dg)' opacity='0.5'/%3E%3C/svg%3E");
-    box-shadow: 
-        inset -20px -10px 30px rgba(0,0,0,0.15),
-        0 0 60px rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3CradialGradient id='dg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23bbb'/%3E%3Cstop offset='100%25' stop-color='%23999'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='40' r='10' fill='url(%23dg)' opacity='0.5'/%3E%3Ccircle cx='70' cy='30' r='16' fill='url(%23dg)' opacity='0.3'/%3E%3Ccircle cx='80' cy='70' r='8' fill='url(%23dg)' opacity='0.4'/%3E%3Ccircle cx='40' cy='90' r='12' fill='url(%23dg)' opacity='0.2'/%3E%3Ccircle cx='90' cy='90' r='6' fill='url(%23dg)' opacity='0.5'/%3E%3C/svg%3E%3C/svg%3E");
+    box-shadow: inset -20px -10px 30px rgba(0,0,0,0.15), 0 0 60px rgba(255, 255, 255, 0.3);
     opacity: 0.85;
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Sun state when in light mode */
+.light-mode .moon {
+    background: #FFD700;
+    background-image: radial-gradient(circle at 30% 30%, #FFF7AD 0%, #FFD700 70%);
+    box-shadow: 0 0 100px #FFB800, 0 0 200px rgba(255, 184, 0, 0.4);
+    opacity: 1;
+    top: 5vh;
+}
+
+.light-mode .city-skyline-bg { opacity: 0.15; filter: grayscale(1) invert(1); }
+.light-mode .city-skyline-fg { opacity: 0.8; filter: brightness(1.2); }
+.light-mode .streetlights { opacity: 0; pointer-events: none; visibility: hidden; }
+
+/* Invert Logo/Text colors for readability in day mode */
+.light-mode .landing-logo { color: #000000; text-shadow: 0 0 20px rgba(255,255,255,0.8); }
+.light-mode .landing-tagline { color: #444444; }
+.light-mode .btn-primary.landing-btn { background: #000; color: #fff; border: none; }
+
+/* Bus adjustments for Day mode */
+.light-mode .bus-animation-wrapper { filter: drop-shadow(0 20px 20px rgba(0,0,0,0.1)); }
+/* Target the SVG body gradient in light mode to make it silver/white */
+.light-mode #bodyGrad stop:first-child { stop-color: #ffffff; }
+.light-mode #bodyGrad stop:nth-child(2) { stop-color: #e2e8f0; }
+.light-mode #bodyGrad stop:last-child { stop-color: #cbd5e0; }
 
 /* HIGH SPEED REALISTIC STREETLIGHTS */
 .streetlights {
