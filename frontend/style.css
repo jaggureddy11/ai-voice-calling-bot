@@ -61,12 +61,35 @@ body {
     mask-image: radial-gradient(circle at center, black 10%, transparent 85%);
 }
 
-/* PARALLAX BUS ENGINES */
+/* REALISTIC ROAD SCENE */
+.road-surface {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; 
+    height: 18vh;
+    background: linear-gradient(to bottom, #151515, #080808);
+    border-top: 1px solid #333;
+    z-index: 2;
+    overflow: hidden;
+}
+
+/* Sliding Lane Lines */
+.road-lanes {
+    position: absolute;
+    top: 50%; width: 200%; height: 4px;
+    background-image: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(255, 211, 42, 0.4) 40%, rgba(255, 211, 42, 0.4) 100%);
+    background-size: 100px 4px;
+    animation: slideLanes 1s linear infinite;
+}
+
+@keyframes slideLanes {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100px); }
+}
+
 .bus-animation-wrapper {
     position: absolute;
     left: -600px;
-    z-index: 2;
-    mix-blend-mode: screen;
+    z-index: 3;
     pointer-events: none;
 }
 
@@ -77,11 +100,11 @@ body {
 }
 
 .bus-fg {
-    top: 58%;
-    width: 550px;
-    opacity: 0.25;
-    filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
-    animation: busDriveFg 18s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    bottom: 8vh; /* Position wheels right onto the road */
+    width: 600px;
+    opacity: 1; /* Fully solid and realistic */
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); /* Cast dark shadow on road */
+    animation: busDriveFg 14s cubic-bezier(0.2, 0, 0.8, 1) infinite;
 }
 
 @keyframes busDriveFg {
