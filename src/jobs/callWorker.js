@@ -1,6 +1,5 @@
 const { Worker } = require('bullmq');
 const { connection } = require('../config/redis');
-const twilioClient = require('../config/twilio');
 const supabase = require('../config/supabase');
 
 // Worker to process 'callNotifications' jobs
@@ -11,65 +10,28 @@ const worker = new Worker('callNotifications', async job => {
     
     console.log(`[Job ${job.id}] Processing call to ${name} (${phone})...`);
 
-    // Simple Twilio string interpolation using TwiML
-    let message = `Namaste ${name}, your bus to ${boarding_point} is departing at ${time}. Please reach the boarding point 15 minutes early.`;
-    
-    if(language === 'hi-IN') {
-       message = `Namaste ${name}, aapki bus ${boarding_point} se ${time} par ravaana hogi. Kripya pandra minute pehle pahunch jaayein.`;
-    } else if(language === 'te-IN') {
-       message = `Namaste ${name}, mee bus ${boarding_point} nundi ${time} ki bayaluderutundi. Dayachesi padmudu nimmishalu mundu cherukondi.`;
-    } else if(language === 'kn-IN') {
-       message = `Namaste ${name}, nimma bus ${boarding_point} ninda ${time} gantege horaduttade. Dayavittu hadinaidu nimisha mundagi banni.`;
-    }
-
-    const twimlObj = new twilioClient.twiml.VoiceResponse();
-    
-    // NEW: Use Premium HF Voice for Initial Greeting
-    const { generateSpeech } = require('../services/hfService');
-    const hfUrl = await generateSpeech(message);
-    console.log(`[Worker HF Debug] Generated URL: ${hfUrl}`);
-
-
-    // Make the call conversational by adding a Gather block
-    const gather = twimlObj.gather({
-      input: 'speech',
-      action: `/api/calls/voice/respond?callLogId=${callLogId}`,
-      speechTimeout: 'auto',
-      language: language || 'en-IN'
-    });
-
-    if (hfUrl) {
-      gather.play(hfUrl);
-    } else {
-      gather.say({ voice: 'Polly.Aditi', language: language || 'en-IN' }, message);
-    }
-
-
-    // Update Supabase with attempt count increment
+    // Update Supabase with attempt count increment manually instead of RCP to prevent crash
     if (callLogId) {
-       await supabase.rpc('increment_attempt', { log_id: callLogId });
+       const { data: currentLog } = await supabase.from('call_logs').select('attempt_count').eq('id', callLogId).single();
+       if (currentLog) {
+         await supabase.from('call_logs').update({ attempt_count: (currentLog.attempt_count || 0) + 1 }).eq('id', callLogId);
+       }
     }
 
-    const call = await twilioClient.calls.create({
-      twiml: twimlObj.toString(),
-      to: phone,
-      from: process.env.TWILIO_FROM_NUMBER,
-      statusCallback: `${process.env.BASE_URL}/api/calls/voice/status`,
-      statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-      statusCallbackMethod: 'POST'
-    });
+    const { createCall } = require('../services/exotelService');
+    const exotelSid = await createCall(phone, callLogId);
     
-    console.log(`[Job ${job.id}] Call triggered successfully! Call SID: ${call.sid}`);
+    console.log(`[Job ${job.id}] Exotel Call triggered successfully! SID: ${exotelSid}`);
     
     // Update Supabase Call Log with SID and initial status
     if (callLogId) {
       await supabase
         .from('call_logs')
-        .update({ status: 'initiated', twilio_sid: call.sid })
+        .update({ status: 'initiated', twilio_sid: exotelSid }) // Using same column twilio_sid to hold external platform SID
         .eq('id', callLogId);
     }
 
-    return call.sid;
+    return exotelSid;
   } catch (error) {
     console.error(`[Job ${job.id}] Failed to trigger call: ${error.message}`);
     

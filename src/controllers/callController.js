@@ -74,12 +74,12 @@ const addPassenger = async (req, res) => {
 
 const notifyJourney = async (req, res) => {
   try {
-    const journeyId = req.body.journeyId || req.params.journeyId;
+    const busId = req.body.busId || req.body.journeyId || req.params.journeyId;
     const { force, message_override } = req.body;
     
-    if (!journeyId) return res.status(400).json({ error: 'journeyId is required.' });
+    if (!busId) return res.status(400).json({ error: 'busId is required.' });
 
-    const result = await notifyJourneyLogic(journeyId);
+    const result = await notifyJourneyLogic(busId);
     res.status(200).json(result);
   } catch (error) {
 
@@ -88,14 +88,14 @@ const notifyJourney = async (req, res) => {
   }
 };
 
-const notifyJourneyLogic = async (journeyId) => {
-  console.log(`Fetching passengers for journey ${journeyId} from Supabase...`);
+const notifyJourneyLogic = async (busId) => {
+  console.log(`Fetching passengers for bus ${busId} from Supabase...`);
 
   // Fetch passengers
   const { data: passengers, error: fetchError } = await supabase
     .from('passengers')
     .select('*')
-    .eq('journey_id', journeyId);
+    .eq('bus_id', busId);
 
   if (fetchError || !passengers || passengers.length === 0) {
     throw new Error('No passengers found for this journey.');
@@ -135,7 +135,7 @@ const notifyJourneyLogic = async (journeyId) => {
 
   return {
     success: true,
-    message: `Successfully fetched and queued calls for ${queuedCount} passengers on journey ${journeyId}.`
+    message: `Successfully fetched and queued calls for ${queuedCount} passengers on bus ${busId}.`
   };
 };
 
