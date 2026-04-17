@@ -340,7 +340,14 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     .search-box input { width: 100%; }
     .header-title { font-size: 2rem; }
     
-    .grid-cards { grid-template-columns: 1fr; }
+    .grid-cards { grid-template-columns: 1fr 1fr; gap: 15px; }
+    .grid-cards-small { grid-template-columns: 1fr 1fr; gap: 15px; }
+    .operator-card { padding: 20px 15px; }
+    .op-logo-wrap { width: 50px; height: 50px; margin-bottom: 15px; border-radius: 8px; }
+    .op-title { font-size: 1.2rem; margin-bottom: 10px; }
+    .op-meta { font-size: 0.65rem; }
+    .agency-card { padding: 20px 15px; flex-direction: column; gap: 10px; text-align: center; }
+    .ag-info h4 { font-size: 1.1rem; }
     .stats-row { grid-template-columns: 1fr 1fr; }
     
     .bus-list-item { flex-direction: column; align-items: flex-start; gap: 20px; }
