@@ -26,52 +26,126 @@
         <!-- Foreground Primary Bus -->
         <div class="bus-animation-wrapper bus-fg">
             <svg viewBox="0 0 450 150" xmlns="http://www.w3.org/2000/svg" class="hero-bus-svg">
-                <!-- Energy Trail -->
-                <path d="M 10 95 L -150 95" stroke="rgba(255,255,255,0.8)" stroke-width="6" stroke-dasharray="30,15"
-                    class="energy-trail" />
-                <path d="M 10 85 L -80 85" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-dasharray="15,10"
-                    class="energy-trail-fast" />
-                <path d="M 10 105 L -60 105" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-dasharray="10,5"
-                    class="energy-trail" />
+                <defs>
+                    <!-- Metallic Body Gradient -->
+                    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#3a3a3a"/>
+                        <stop offset="50%" stop-color="#222222"/>
+                        <stop offset="100%" stop-color="#0a0a0a"/>
+                    </linearGradient>
+                    
+                    <!-- Window Tint Gradient -->
+                    <linearGradient id="windowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#050505"/>
+                        <stop offset="100%" stop-color="#181818"/>
+                    </linearGradient>
 
-                <!-- Autonomous Bus Body -->
-                <rect x="10" y="30" width="380" height="90" rx="15" fill="rgba(0,0,0,0.4)" stroke="#ffffff"
-                    stroke-width="3" />
+                    <!-- Alloy Wheel Gradient -->
+                    <linearGradient id="alloyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#dddddd"/>
+                        <stop offset="50%" stop-color="#999999"/>
+                        <stop offset="100%" stop-color="#555555"/>
+                    </linearGradient>
 
-                <!-- Windows with Glass Effect -->
-                <rect x="40" y="45" width="280" height="35" rx="5" fill="rgba(255,255,255,0.08)" stroke="#ffffff"
-                    stroke-width="2" />
-                <line x1="110" y1="45" x2="110" y2="80" stroke="#ffffff" stroke-width="2" />
-                <line x1="180" y1="45" x2="180" y2="80" stroke="#ffffff" stroke-width="2" />
-                <line x1="250" y1="45" x2="250" y2="80" stroke="#ffffff" stroke-width="2" />
+                    <!-- Glow effect for lights -->
+                    <filter id="glowLight" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    
+                    <!-- Taillight Red Glow -->
+                    <filter id="glowRed" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                        <feComponentTransfer in="blur" result="glow">
+                            <feFuncA type="linear" slope="1.5" />
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode in="glow" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
 
-                <!-- Lidar / Cyber Sensors -->
-                <path d="M 60 30 L 70 18 L 90 18 L 100 30" fill="none" stroke="#ffffff" stroke-width="2.5" />
-                <circle cx="80" cy="18" r="3" fill="#ffffff" class="sensor-pulse" />
-                <path d="M 320 30 L 330 20 L 350 20 L 360 30" fill="none" stroke="#ffffff" stroke-width="2.5" />
-                <circle cx="340" cy="20" r="3" fill="#ffffff" class="sensor-pulse" />
+                <!-- Energy Trail (Speed markers behind bus) -->
+                <path d="M 10 95 L -100 95" stroke="rgba(255,255,255,0.4)" stroke-width="4" stroke-dasharray="25,12" class="energy-trail" />
+                <path d="M 10 85 L -60 85" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="10,8" class="energy-trail-fast" />
 
-                <!-- Hover Wheels Effect -->
-                <circle cx="80" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="3" />
-                <circle cx="80" cy="120" r="6" fill="#ffffff" />
-                <path d="M 60 138 Q 80 145 100 138" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="3"
-                    stroke-linecap="round" />
+                <!-- Floor Shadow -->
+                <ellipse cx="200" cy="130" rx="190" ry="6" fill="rgba(0,0,0,0.8)" filter="blur(3px)" />
 
-                <circle cx="320" cy="120" r="16" fill="var(--bg-dark)" stroke="#ffffff" stroke-width="3" />
-                <circle cx="320" cy="120" r="6" fill="#ffffff" />
-                <path d="M 300 138 Q 320 145 340 138" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="3"
-                    stroke-linecap="round" />
+                <!-- Main Bus Silhouette / Chassis -->
+                <path d="M 15 30 L 370 30 Q 395 30 395 60 L 395 105 Q 395 118 380 118 L 15 118 Q 5 118 5 105 L 5 45 Q 5 30 15 30 Z" fill="url(#bodyGrad)" stroke="#555555" stroke-width="1"/>
 
-                <!-- Aerodynamic Front & Lights -->
-                <path d="M 390 45 Q 410 70 390 115" fill="none" stroke="#ffffff" stroke-width="3" />
-                <line x1="390" y1="95" x2="410" y2="95" stroke="#ffffff" stroke-width="5" class="headlight-beam"
-                    stroke-linecap="round" />
+                <!-- Wheel Wells (Body Cutouts) -->
+                <path d="M 60 118 C 60 92, 100 92, 100 118 Z" fill="#000000" />
+                <path d="M 300 118 C 300 92, 340 92, 340 118 Z" fill="#000000" />
 
-                <line x1="10" y1="95" x2="-5" y2="95" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+                <!-- Lower trim / carbon fiber side skirt -->
+                <rect x="5" y="108" width="390" height="8" fill="#111" />
+                
+                <!-- Front Aerodynamic Accents -->
+                <path d="M 370 30 Q 380 70 395 85" fill="none" stroke="#666" stroke-width="1"/>
+                <path d="M 395 85 L 395 105" fill="none" stroke="#333" stroke-width="2"/>
 
-                <!-- Elite Branding -->
-                <text x="200" y="105" font-family="'Inter', sans-serif" font-size="12" font-weight="700" fill="#ffffff"
-                    letter-spacing="6" text-anchor="middle">BOARDLY</text>
+                <!-- Front Windshield & Side Windows Wrapping -->
+                <path d="M 345 35 L 380 35 Q 390 35 390 55 L 390 75 Q 390 80 380 80 L 345 80 Z" fill="url(#windowGrad)" stroke="#111" stroke-width="2" />
+                
+                <!-- Main Passenger Windows (Tinted Block) -->
+                <rect x="35" y="35" width="300" height="45" rx="3" fill="url(#windowGrad)" stroke="#111" stroke-width="2" />
+                
+                <!-- Window Pillars (Mullions) -->
+                <line x1="95" y1="35" x2="95" y2="80" stroke="#111" stroke-width="3" />
+                <line x1="155" y1="35" x2="155" y2="80" stroke="#111" stroke-width="3" />
+                <line x1="215" y1="35" x2="215" y2="80" stroke="#111" stroke-width="3" />
+                <line x1="275" y1="35" x2="275" y2="80" stroke="#111" stroke-width="3" />
+
+                <!-- Glossy Window Reflections -->
+                <path d="M 37 38 L 333 38 L 333 46 L 37 56 Z" fill="rgba(255,255,255,0.04)" />
+                <path d="M 347 38 L 380 38 Q 388 38 388 50 L 388 52 L 347 62 Z" fill="rgba(255,255,255,0.04)" />
+
+                <!-- Roof AC Unit / Drone Battery Pack -->
+                <rect x="170" y="22" width="120" height="8" rx="2" fill="#222" stroke="#444" stroke-width="1"/>
+                <rect x="175" y="24" width="110" height="4" fill="#111"/>
+                
+                <!-- Cyber/Lidar Domes on Roof -->
+                <path d="M 55 30 Q 75 10 90 30 Z" fill="#222" stroke="#444" stroke-width="1"/>
+                <circle cx="73" cy="22" r="3" fill="#00d8ff" filter="url(#glowLight)" class="sensor-pulse" />
+
+                <path d="M 290 30 Q 310 10 325 30 Z" fill="#222" stroke="#444" stroke-width="1"/>
+                <circle cx="308" cy="22" r="3" fill="#00d8ff" filter="url(#glowLight)" class="sensor-pulse" />
+
+                <!-- Taillight (Red LED Strip) -->
+                <rect x="4" y="85" width="4" height="18" rx="2" fill="#ff0000" filter="url(#glowRed)" />
+
+                <!-- Premium Branding Overlay -->
+                <!-- Silver sophisticated print -->
+                <text x="200" y="96" font-family="'Inter', sans-serif" font-size="12" font-weight="700" fill="#999999" letter-spacing="8" text-anchor="middle">BOARDLY</text>
+
+                <!-- Wheels (Hyper-detailed thick tires & alloy rims) -->
+                <!-- Rear Wheel -->
+                <circle cx="80" cy="115" r="18" fill="#0a0a0a" /> <!-- Thick Rubber Tire -->
+                <circle cx="80" cy="115" r="15" fill="#151515" stroke="#333" stroke-width="1" /> <!-- Tread Depth -->
+                <circle cx="80" cy="115" r="11" fill="url(#alloyGrad)" /> <!-- Silver Alloy Rim -->
+                <circle cx="80" cy="115" r="9" fill="none" stroke="#222" stroke-width="2" stroke-dasharray="3,3"/> <!-- Spokes detail -->
+                <circle cx="80" cy="115" r="4" fill="#444" /> <!-- Center cap hub -->
+
+                <!-- Front Wheel -->
+                <circle cx="320" cy="115" r="18" fill="#0a0a0a" /> <!-- Thick Rubber Tire -->
+                <circle cx="320" cy="115" r="15" fill="#151515" stroke="#333" stroke-width="1" /> <!-- Tread Depth -->
+                <circle cx="320" cy="115" r="11" fill="url(#alloyGrad)" /> <!-- Silver Alloy Rim -->
+                <circle cx="320" cy="115" r="9" fill="none" stroke="#222" stroke-width="2" stroke-dasharray="3,3"/> <!-- Spokes detail -->
+                <circle cx="320" cy="115" r="4" fill="#444" /> <!-- Center cap hub -->
+
+                <!-- Headlights (Realistic Forward Lighting) -->
+                <rect x="385" y="85" width="8" height="12" rx="2" fill="#e0f7ff" />
+                <!-- Intense Bulb Glow -->
+                <circle cx="390" cy="91" r="4" fill="#ffffff" filter="url(#glowLight)" class="headlight-beam" />
+                
+                <!-- Volumetric Light Beam Projecting Forward -->
+                <polygon points="392,91 460,98 460,115 392,98" fill="rgba(255,255,255,0.06)" class="headlight-beam" />
             </svg>
         </div>
 
