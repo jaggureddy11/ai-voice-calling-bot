@@ -111,7 +111,7 @@ body {
 }
 
 .headlight-beam {
-    filter: drop-shadow(15px 0 12px rgba(255,255,255,0.9));
+    filter: drop-shadow(15px 0 12px rgba(255, 211, 42, 0.9));
     animation: beamFlicker 3s infinite alternate;
 }
 
