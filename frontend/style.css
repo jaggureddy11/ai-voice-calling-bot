@@ -41,25 +41,81 @@ body {
 .landing-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: var(--bg-dark);
+    background: #000000; /* Pure black background */
     z-index: 100;
     transition: opacity 1s ease, visibility 1s;
-    overflow: hidden; /* Ensure bus doesn't cause overflow */
+    overflow: hidden; 
 }
 
-/* GRID OVERLAY VIGNETTE */
-.landing-grid-overlay {
+/* PARALLAX CITYSCAPE & SCENERY */
+.city-skyline-bg, .city-skyline-fg {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 60px 60px;
+    bottom: 18vh; left: 0; 
+    height: 40vh; width: 100%;
+    background-repeat: repeat-x;
     z-index: 1;
-    pointer-events: none;
-    -webkit-mask-image: radial-gradient(circle at center, black 10%, transparent 85%);
-    mask-image: radial-gradient(circle at center, black 10%, transparent 85%);
 }
+
+/* Distant skyline */
+.city-skyline-bg {
+    background-image: 
+        linear-gradient(to right, 
+            transparent 0px, transparent 20px, 
+            #050505 20px, #050505 80px, 
+            transparent 80px, transparent 120px, 
+            #070707 120px, #070707 200px, 
+            transparent 200px, transparent 280px, 
+            #040404 280px, #040404 350px, 
+            transparent 350px, transparent 400px
+        );
+    background-size: 400px 30vh;
+    background-position: 0 bottom;
+    animation: bgPanSlow 40s linear infinite;
+}
+
+/* Foreground buildings */
+.city-skyline-fg {
+    height: 25vh;
+    background-image: 
+        linear-gradient(to right, 
+            transparent 0px, transparent 50px, 
+            #0a0a0a 50px, #0a0a0a 150px, 
+            transparent 150px, transparent 250px, 
+            #0e0e0e 250px, #0e0e0e 380px, 
+            transparent 380px, transparent 600px
+        );
+    background-size: 600px 25vh;
+    background-position: 0 bottom;
+    animation: bgPanMedium 20s linear infinite;
+    z-index: 1;
+}
+
+/* HIGH SPEED STREETLIGHTS */
+.streetlights {
+    position: absolute;
+    bottom: 18vh; left: 0;
+    width: 100%; height: 35vh;
+    background-image: 
+        /* 1. Yellow volumetric bulb glow */
+        radial-gradient(circle at 48px 15px, rgba(255, 211, 42, 0.85) 0px, rgba(255, 211, 42, 0) 35px),
+        /* 2. Top fixture arm extending over the road */
+        linear-gradient(to right, transparent 30px, #222 30px, #111 48px, transparent 48px),
+        /* 3. Main vertical light pole */
+        linear-gradient(to right, transparent 28px, #1a1a1a 28px, #070707 34px, transparent 34px);
+    background-size: 
+        300px 100%, 
+        300px 5px, 
+        300px 100%;
+    background-repeat: repeat-x;
+    background-position: 0 0, 0 15px, 0 0;
+    z-index: 2;
+    animation: bgPanFast 1.2s linear infinite;
+}
+
+/* Parallax infinite panning keyframes */
+@keyframes bgPanSlow { 0% { background-position-x: 0px; } 100% { background-position-x: -400px; } }
+@keyframes bgPanMedium { 0% { background-position-x: 0px; } 100% { background-position-x: -600px; } }
+@keyframes bgPanFast { 0% { background-position-x: 0px, 0px, 0px; } 100% { background-position-x: -300px, -300px, -300px; } }
 
 /* SLEEK PREMIUM ROAD SCENE */
 .road-surface {
