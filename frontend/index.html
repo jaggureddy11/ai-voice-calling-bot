@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,15 @@
     <!-- Luxurious Fonts: Playfair Display + Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
     <!-- Icon Font -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
     <!-- 1. Landing Screen -->
@@ -60,7 +64,7 @@
                 <div class="header-actions">
                     <div class="search-box">
                         <i class="ri-search-line"></i>
-                        <input type="text" id="global-search" placeholder="Search operations...">
+                        <input type="text" id="global-search" placeholder="Search Operator...">
                     </div>
                     <button class="btn-icon"><i class="ri-notification-3-line"></i><span class="badge">3</span></button>
                     <div class="user-profile-header">
@@ -70,7 +74,7 @@
             </header>
 
             <div class="views-wrapper">
-                
+
                 <!-- VIEW 1: OPERATORS -->
                 <section id="view-operators" class="view-section active">
                     <div class="section-top">
@@ -86,7 +90,9 @@
                 <section id="view-agencies" class="view-section">
                     <div class="section-top">
                         <div class="section-top-inner">
-                            <button class="btn-back" onclick="navigate('view-operators', 'Select Operator', 'Home / Operators')"><i class="ri-arrow-left-line"></i> Back</button>
+                            <button class="btn-back"
+                                onclick="navigate('view-operators', 'Select Operator', 'Home / Operators')"><i
+                                    class="ri-arrow-left-line"></i> Back</button>
                             <h3 id="agency-provider-title">Travel Agencies</h3>
                         </div>
                     </div>
@@ -99,7 +105,9 @@
                 <section id="view-buses" class="view-section">
                     <div class="section-top">
                         <div class="section-top-inner">
-                            <button class="btn-back" onclick="navigate('view-agencies', 'Select Agency', 'Home / Agencies')"><i class="ri-arrow-left-line"></i> Back</button>
+                            <button class="btn-back"
+                                onclick="navigate('view-agencies', 'Select Agency', 'Home / Agencies')"><i
+                                    class="ri-arrow-left-line"></i> Back</button>
                             <h3 id="bus-agency-title">Active Fleet</h3>
                         </div>
                     </div>
@@ -112,12 +120,14 @@
                 <section id="view-bus-dashboard" class="view-section">
                     <div class="section-top dashboard-top">
                         <div class="section-top-inner">
-                            <button class="btn-back" onclick="navigate('view-buses', 'Active Fleet', 'Home / Fleet')"><i class="ri-arrow-left-line"></i> Back</button>
+                            <button class="btn-back" onclick="navigate('view-buses', 'Active Fleet', 'Home / Fleet')"><i
+                                    class="ri-arrow-left-line"></i> Back</button>
                         </div>
                         <div class="bus-meta-card premium-panel">
                             <div class="meta-left">
                                 <h3 id="dash-bus-no" class="serif-title">MH 12 AB 1234</h3>
-                                <p id="dash-route">Mumbai &rarr; Pune <span class="divider-dot">&bull;</span> <span id="dash-time">22:30 PM</span></p>
+                                <p id="dash-route">Mumbai &rarr; Pune <span class="divider-dot">&bull;</span> <span
+                                        id="dash-time">22:30 PM</span></p>
                             </div>
                             <div class="meta-right meta-actions">
                                 <button class="btn-primary" onclick="triggerAutoCall()">Trigger Calls</button>
@@ -130,7 +140,11 @@
                         <div class="panel-header">
                             <h4>Passenger Manifest</h4>
                             <div class="panel-filters">
-                                <select class="minimal-select"><option>All Status</option><option>Boarded</option><option>Pending</option></select>
+                                <select class="minimal-select">
+                                    <option>All Status</option>
+                                    <option>Boarded</option>
+                                    <option>Pending</option>
+                                </select>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -186,26 +200,28 @@
                         <canvas id="summaryChart"></canvas>
                     </div>
                 </section>
-                
+
                 <!-- VIEW 6: AI ASSISTANT -->
                 <section id="view-ai-chat" class="view-section">
-                     <div class="premium-panel chat-panel">
-                         <div class="chat-header">
+                    <div class="premium-panel chat-panel">
+                        <div class="chat-header">
                             <div class="chat-title-box">
                                 <h4 class="serif-title">AI Concierge</h4>
                                 <p>Operational assistance & queries</p>
                             </div>
-                         </div>
-                         <div class="chat-body" id="chat-messages">
-                             <div class="msg ai-msg">
-                                 <div class="msg-bubble">Greetings. I am the Boardly AI Concierge. How may I assist you with your operations today?</div>
-                             </div>
-                         </div>
-                         <div class="chat-footer">
-                             <input type="text" id="chat-input" placeholder="Inquire about a trip...">
-                             <button class="btn-icon-primary" onclick="sendChat()"><i class="ri-send-plane-fill"></i></button>
-                         </div>
-                     </div>
+                        </div>
+                        <div class="chat-body" id="chat-messages">
+                            <div class="msg ai-msg">
+                                <div class="msg-bubble">Greetings. I am the Boardly AI Concierge. How may I assist you
+                                    with your operations today?</div>
+                            </div>
+                        </div>
+                        <div class="chat-footer">
+                            <input type="text" id="chat-input" placeholder="Inquire about a trip...">
+                            <button class="btn-icon-primary" onclick="sendChat()"><i
+                                    class="ri-send-plane-fill"></i></button>
+                        </div>
+                    </div>
                 </section>
 
             </div>
@@ -214,13 +230,14 @@
 
     <!-- Modals & Overlays -->
     <div id="modal-backdrop" class="modal-backdrop hidden"></div>
-    
+
     <!-- Add Passenger Modal -->
     <div id="add-passenger-modal" class="modal hidden">
         <div class="premium-panel">
             <div class="modal-header">
                 <h3 class="serif-title">New Entry</h3>
-                <button class="close-btn" onclick="closeModal('add-passenger-modal')"><i class="ri-close-line"></i></button>
+                <button class="close-btn" onclick="closeModal('add-passenger-modal')"><i
+                        class="ri-close-line"></i></button>
             </div>
             <div class="modal-body">
                 <div class="ocr-zone" onclick="document.getElementById('upload-manifest').click()">
@@ -259,4 +276,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>
