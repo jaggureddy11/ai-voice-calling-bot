@@ -76,15 +76,6 @@ body {
     overflow: visible;
 }
 
-.bus-bg {
-    top: 35%;
-    width: 300px;
-    opacity: 0.08;
-    filter: blur(2px);
-    animation: busDriveBg 35s linear infinite;
-}
-.bus-bg .hero-bus-svg { animation-delay: -1s; }
-
 .bus-fg {
     top: 58%;
     width: 550px;
@@ -94,11 +85,6 @@ body {
 }
 
 @keyframes busDriveFg {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(calc(100vw + 1200px)); }
-}
-
-@keyframes busDriveBg {
     0% { transform: translateX(0); }
     100% { transform: translateX(calc(100vw + 1200px)); }
 }
