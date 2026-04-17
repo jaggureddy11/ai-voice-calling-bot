@@ -47,51 +47,41 @@ body {
     overflow: hidden; 
 }
 
-/* PARALLAX CITYSCAPE & SCENERY */
-.city-skyline-bg, .city-skyline-fg {
+/* Animated Background Scenery */
+.city-skyline-bg {
     position: absolute;
     bottom: 18vh; left: 0; 
-    height: 40vh; width: 100%;
-    background-repeat: repeat-x;
-    z-index: 1;
-}
-
-/* Distant skyline */
-.city-skyline-bg {
+    height: 45vh; width: 100%;
     background-image: 
-        linear-gradient(to right, 
-            transparent 0px, transparent 20px, 
-            #050505 20px, #050505 80px, 
-            transparent 80px, transparent 120px, 
-            #070707 120px, #070707 200px, 
-            transparent 200px, transparent 280px, 
-            #040404 280px, #040404 350px, 
-            transparent 350px, transparent 400px
-        );
-    background-size: 400px 30vh;
-    background-position: 0 bottom;
-    animation: bgPanSlow 40s linear infinite;
-}
-
-/* Foreground realistic skyscraper windows */
-.city-skyline-fg {
-    height: 30vh;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='400'%3E%3Cdefs%3E%3ClinearGradient id='w_grad' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23111'/%3E%3Cstop offset='100%25' stop-color='%23050505'/%3E%3C/linearGradient%3E%3Cpattern id='windows_office' width='16' height='24' patternUnits='userSpaceOnUse'%3E%3Crect x='2' y='2' width='12' height='20' fill='%23ffd43b' opacity='0.75'/%3E%3C/pattern%3E%3Cpattern id='windows_apartments' width='10' height='10' patternUnits='userSpaceOnUse'%3E%3Crect x='1' y='1' width='8' height='8' fill='%23fcca46' opacity='0.9'/%3E%3C/pattern%3E%3Cpattern id='windows_dark' width='16' height='24' patternUnits='userSpaceOnUse'%3E%3Crect x='2' y='2' width='12' height='20' fill='%23ffd43b' opacity='0.15'/%3E%3C/pattern%3E%3C/defs%3E%3Cg transform='translate(0, 100)'%3E%3Crect x='50' y='50' width='180' height='300' fill='url(%23w_grad)' stroke='%23222'/%3E%3Crect x='60' y='60' width='160' height='290' fill='url(%23windows_office)'/%3E%3Crect x='340' y='0' width='140' height='350' fill='url(%23w_grad)' stroke='%23222'/%3E%3Crect x='350' y='10' width='120' height='340' fill='url(%23windows_apartments)'/%3E%3Crect x='600' y='80' width='220' height='270' fill='url(%23w_grad)' stroke='%23222'/%3E%3Crect x='610' y='90' width='200' height='260' fill='url(%23windows_dark)'/%3E%3Crect x='920' y='20' width='150' height='330' fill='url(%23w_grad)' stroke='%23222'/%3E%3Crect x='930' y='30' width='130' height='320' fill='url(%23windows_office)'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 1200px 100%;
-    background-position: 0 bottom;
-    animation: bgPanMedium 20s linear infinite;
+        radial-gradient(circle at 50% 100%, rgba(25, 25, 40, 0.4) 0%, transparent 80%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='400'%3E%3Cg opacity='0.15'%3E%3Cpath d='M0 400 L40 360 L80 380 L140 310 L200 350 L260 280 L320 340 L380 260 L440 310 L500 240 L560 290 L620 220 L680 270 L740 190 L800 240 L860 170 L920 220 L980 150 L1040 200 L1100 130 L1160 180 L1200 140 V400 Z' fill='%23050510'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 100% 100%, 1200px 100%;
+    background-repeat: no-repeat, repeat-x;
+    background-position: center bottom, 0 bottom;
+    animation: none, bgPanSlow 150s linear infinite;
     z-index: 1;
 }
 
-/* HIGH SPEED REALISTIC STREETLIGHTS (FEWER LAMPS) */
+/* Foreground detailed skyline - REFINED SILHOUETTES */
+.city-skyline-fg {
+    height: 42vh;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2400' height='400'%3E%3Cdefs%3E%3ClinearGradient id='build_grad' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23121218'/%3E%3Cstop offset='100%25' stop-color='%23060608'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg transform='translate(0, 40)'%3E%3C!-- Building 1 --%3E%3Crect x='100' y='180' width='120' height='220' fill='url(%23build_grad)'/%3E%3Crect x='110' y='200' width='1.5' height='1.5' fill='%23ffd43b' opacity='0.4'/%3E%3Crect x='140' y='210' width='1.5' height='1.5' fill='%23ffd43b' opacity='0.2'/%3E%3Ccircle cx='110' cy='180' r='1' fill='%23f00' opacity='0.5'/%3E%3C!-- Building 2: Skyscraper --%3E%3Crect x='350' y='40' width='60' height='360' fill='url(%23build_grad)'/%3E%3Cline x1='380' y1='0' x2='380' y2='40' stroke='%23333' stroke-width='1'/%3E%3Ccircle cx='380' cy='0' r='1.5' fill='%23f00' opacity='0.8'/%3E%3Crect x='360' y='60' width='6' height='1' fill='%23ffd43b' opacity='0.6'/%3E%3C!-- Building 3: Wide Office --%3E%3Crect x='580' y='200' width='220' height='200' fill='url(%23build_grad)'/%3E%3Crect x='600' y='220' width='2' height='2' fill='%23fff' opacity='0.3'/%3E%3Crect x='680' y='230' width='2' height='2' fill='%23ffd43b' opacity='0.4'/%3E%3C!-- Building 4: Stepped --%3E%3Cpath d='M950 120 L1080 120 L1080 400 L880 400 L880 170 L950 170 Z' fill='url(%23build_grad)'/%3E%3Crect x='970' y='140' width='1.5' height='1.5' fill='%23ffd43b' opacity='0.5'/%3E%3C!-- Building 5 --%3E%3Crect x='1300' y='220' width='100' height='180' fill='url(%23build_grad)'/%3E%3Crect x='1320' y='240' width='1.5' height='1.5' fill='%23ffd43b' opacity='0.2'/%3E%3C!-- Building 6 --%3E%3Crect x='1600' y='80' width='70' height='320' fill='url(%23build_grad)'/%3E%3Cline x1='1635' y1='30' x2='1635' y2='80' stroke='%23334' stroke-width='1'/%3E%3Ccircle cx='1635' cy='30' r='1' fill='%23f00' opacity='0.7'/%3E%3C!-- Building 7 --%3E%3Crect x='1900' y='240' width='150' height='160' fill='url(%23build_grad)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 2400px 100%;
+    background-position: 0 bottom;
+    animation: bgPanMedium 80s linear infinite;
+    z-index: 1;
+    opacity: 0.8;
+}
+
+/* HIGH SPEED REALISTIC STREETLIGHTS */
 .streetlights {
     position: absolute;
     bottom: 18vh; left: 0;
-    width: 100%; height: 35vh;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='400'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='8' result='blur'/%3E%3CfeMerge%3E%3CfeMergeNode in='blur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M 180 50 Q 220 20 250 20 L 250 25 Q 220 25 185 55 Z' fill='%23555'/%3E%3Crect x='242' y='20' width='8' height='380' fill='%23333'/%3E%3Ccircle cx='180' cy='52' r='6' fill='%23fff'/%3E%3Ccircle cx='180' cy='52' r='20' fill='rgba(255,230,100,0.85)' filter='url(%23glow)'/%3E%3Cpolygon points='180,52 0,400 360,400' fill='rgba(255,230,100,0.06)'/%3E%3C/svg%3E");
-    background-size: 1500px 35vh;
+    width: 100%; height: 40vh;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3000' height='400'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3C!-- Single Light spaced out --%3E%3Cg transform='translate(1500, 0)'%3E%3Crect x='0' y='130' width='2' height='270' fill='%231a1a1a'/%3E%3Cpath d='M 0 130 Q -40 100 -70 100' stroke='%23222' stroke-width='3.5' fill='none'/%3E%3Ccircle cx='-70' cy='102' r='10' fill='rgba(255,220,100,0.2)' filter='url(%23glow)'/%3E%3Ccircle cx='-70' cy='102' r='4' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 3000px 100%;
     background-repeat: repeat-x;
-    background-position: 0 0;
+    background-position: 0 bottom;
     z-index: 2;
     animation: bgPanFast 3.5s linear infinite;
 }
