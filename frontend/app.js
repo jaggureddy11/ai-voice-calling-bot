@@ -118,17 +118,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Handle Chat input
-    const chatInput = document.getElementById('chat-input');
-    if(chatInput) {
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendChat();
+    // Global Search listener
+    const searchInput = document.getElementById('global-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const activeView = document.querySelector('.view-section.active').id;
+            
+            if (activeView === 'view-operators') renderOperators(term);
+            if (activeView === 'view-agencies') renderAgencies(term);
+            if (activeView === 'view-buses') renderBuses(term);
+            if (activeView === 'view-bus-dashboard') renderPassengers(term);
         });
     }
 });
 
 // --- NAVIGATION LOGIC ---
 function navigate(viewId, title, breadcrumbs, skipStateStore = false) {
+    // Clear search when navigating
+    const searchInput = document.getElementById('global-search');
+    if (searchInput) searchInput.value = '';
+
     // Hide all views
     document.querySelectorAll('.view-section').forEach(v => {
         v.classList.remove('active');
@@ -153,7 +163,7 @@ function navigate(viewId, title, breadcrumbs, skipStateStore = false) {
 
 // --- RENDERERS ---
 
-function renderOperators() {
+function renderOperators(filter = '') {
     const grid = document.getElementById('operators-grid');
     grid.innerHTML = '';
     
@@ -168,7 +178,9 @@ function renderOperators() {
         return;
     }
 
-    operators.forEach(op => {
+    const filtered = operators.filter(op => op.name.toLowerCase().includes(filter));
+
+    filtered.forEach(op => {
         const card = document.createElement('div');
         card.className = 'premium-panel operator-card';
         card.onclick = () => selectOperator(op);
@@ -185,24 +197,15 @@ function renderOperators() {
     });
 }
 
-async function selectOperator(op, skipNav = false) {
-    activeOperator = op;
-    
-    // Fetch agencies dynamically from Supabase
-    try {
-        const res = await fetch(`${API_BASE}/agencies?operatorId=${op.id}`);
-        agencies = await res.json();
-    } catch (e) {
-        showToast('Failed to load agencies', 'danger');
-        return;
-    }
-
+function renderAgencies(filter = '') {
     const grid = document.getElementById('agencies-grid');
     grid.innerHTML = '';
     
-    document.getElementById('agency-provider-title').innerText = `${op.name} Partners`;
+    if (!agencies) return;
+
+    const filtered = agencies.filter(ag => ag.name.toLowerCase().includes(filter));
     
-    agencies.forEach(ag => {
+    filtered.forEach(ag => {
          const card = document.createElement('div');
          card.className = 'premium-panel agency-card';
          card.onclick = () => selectAgency(ag);
@@ -216,27 +219,37 @@ async function selectOperator(op, skipNav = false) {
          `;
          grid.appendChild(card);
     });
+}
+
+async function selectOperator(op, skipNav = false) {
+    activeOperator = op;
+    
+    // Fetch agencies dynamically from Supabase
+    try {
+        const res = await fetch(`${API_BASE}/agencies?operatorId=${op.id}`);
+        agencies = await res.json();
+    } catch (e) {
+        showToast('Failed to load agencies', 'danger');
+        return;
+    }
+
+    document.getElementById('agency-provider-title').innerText = `${op.name} Partners`;
+    renderAgencies();
     
     if(!skipNav) navigate('view-agencies', `Select Agency`, `Home / ${op.name} / Agencies`);
 }
 
-async function selectAgency(ag, skipNav = false) {
-    activeAgency = ag;
-
-    // Fetch buses dynamically from Supabase
-    try {
-        const res = await fetch(`${API_BASE}/buses?agencyId=${ag.id}`);
-        buses = await res.json();
-    } catch (e) {
-        showToast('Failed to load buses', 'danger');
-        return;
-    }
-
+function renderBuses(filter = '') {
     const grid = document.getElementById('buses-list');
     grid.innerHTML = '';
-    document.getElementById('bus-agency-title').innerText = `${ag.name} Fleet`;
+    if (!buses) return;
     
-    buses.forEach(b => {
+    const filtered = buses.filter(b => 
+        b.number.toLowerCase().includes(filter) || 
+        b.route.toLowerCase().includes(filter)
+    );
+
+    filtered.forEach(b => {
         const item = document.createElement('div');
         item.className = 'premium-panel bus-list-item';
         item.onclick = () => selectBus(b);
@@ -256,6 +269,22 @@ async function selectAgency(ag, skipNav = false) {
         `;
         grid.appendChild(item);
     });
+}
+
+async function selectAgency(ag, skipNav = false) {
+    activeAgency = ag;
+
+    // Fetch buses dynamically from Supabase
+    try {
+        const res = await fetch(`${API_BASE}/buses?agencyId=${ag.id}`);
+        buses = await res.json();
+    } catch (e) {
+        showToast('Failed to load buses', 'danger');
+        return;
+    }
+
+    document.getElementById('bus-agency-title').innerText = `${ag.name} Fleet`;
+    renderBuses();
     
     if(!skipNav) navigate('view-buses', `Active Fleet`, `Home / Agencies / ${ag.name}`);
 }
@@ -265,29 +294,29 @@ async function selectBus(bus, skipNav = false) {
     document.getElementById('dash-bus-no').innerText = bus.number;
     document.getElementById('dash-route').innerHTML = `${bus.route} | <span id="dash-time">${bus.time}</span>`;
     
-    await renderPassengers();
+    const res = await fetch(`${API_BASE}/passengers/${activeBus.id}`);
+    passengers = await res.json();
+
+    renderPassengers();
     if(!skipNav) navigate('view-bus-dashboard', `Fleet Control`, `Home / Buses / ${bus.number}`);
 }
 
-async function renderPassengers() {
+async function renderPassengers(filter = '') {
     const tbody = document.getElementById('passengers-tbody');
     tbody.innerHTML = '';
     
-    if (!activeBus) return;
+    if (!activeBus || !passengers) return;
 
-    // Fetch passengers dynamically from Supabase
-    try {
-        const res = await fetch(`${API_BASE}/passengers/${activeBus.id}`);
-        passengers = await res.json();
-    } catch (e) {
-        showToast('Failed to load passengers', 'danger');
-        return;
-    }
+    const filtered = passengers.filter(p => 
+        p.name.toLowerCase().includes(filter) || 
+        (p.seat_no && p.seat_no.toLowerCase().includes(filter)) ||
+        p.phone.includes(filter)
+    );
     
-    passengers.forEach(p => {
+    filtered.forEach(p => {
         const tr = document.createElement('tr');
         
-        // Call status badge
+        // ... (remaining tr.innerHTML logic stays same but we need to keep it inside the replacement block)
         let callBadge = '';
         const status = p.call_status || 'pending';
         if(status === 'success' || status === 'completed') callBadge = `<span class="badge-pill bg-success">Connected</span>`;
@@ -295,7 +324,6 @@ async function renderPassengers() {
         if(['failed', 'busy', 'no-answer', 'canceled'].includes(status))  callBadge = `<span class="badge-pill bg-danger">Failed</span>`;
         if(!callBadge) callBadge = `<span class="badge-pill bg-info">${status.toUpperCase()}</span>`;
 
-        // Boarding toggle
         let boardToggle = p.is_boarded ? 
             `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-success" style="cursor:pointer; border:none;">Boarded</button>` : 
             `<button onclick="toggleBoard('${p.id}')" class="badge-pill bg-warning" style="cursor:pointer; border:none;">Waiting</button>`;

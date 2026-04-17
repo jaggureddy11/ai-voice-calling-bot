@@ -334,12 +334,18 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     .user-profile { display: none; }
     
     /* Top Header Positioning Fix */
-    .top-header { flex-direction: column; align-items: flex-start; gap: 20px; position: relative; padding: 20px 20px 10px 20px; }
+    .top-header { flex-direction: column; align-items: flex-start; gap: 15px; position: relative; padding: 25px 20px 10px 20px; }
     .header-actions { position: static; width: 100%; display: block; }
-    .header-actions .btn-icon { position: absolute; top: 20px; right: 80px; }
-    .header-actions .user-profile-header { position: absolute; top: 20px; right: 20px; }
-    .header-titles { padding-right: 120px; } /* prevent text overlap with abs pos buttons */
-    .search-box { width: 100%; }
+    
+    /* Target notification bell specifically */
+    .header-actions > .btn-icon { position: absolute; top: 25px; right: 80px; z-index: 10; }
+    
+    /* Target profile wrapper */
+    .header-actions .user-profile-header { position: absolute; top: 25px; right: 20px; z-index: 10; }
+    .header-actions .user-profile-header .btn-icon { position: static; } 
+    
+    .header-titles { padding-right: 130px; } /* prevent text overlap */
+    .search-box { width: 100%; margin-top: 10px; }
     .search-box input { width: 100%; }
     .header-title { font-size: 1.8rem; }
     
@@ -368,8 +374,8 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     .views-wrapper { padding: 0 15px 15px 15px; }
     .top-header { padding: 20px 15px 15px 15px; }
     .header-title { font-size: 1.6rem; }
-    .header-actions .btn-icon { right: 70px; }
-    .header-actions .user-profile-header { right: 15px; }
+    .header-actions > .btn-icon { top: 20px; right: 70px; }
+    .header-actions .user-profile-header { top: 20px; right: 15px; }
     
     /* Panel Layout Adjustments */
     .bus-meta-card { padding: 25px 20px; }
