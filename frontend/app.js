@@ -1,6 +1,21 @@
 // --- CONFIGURATION ---
 const API_BASE = 'http://localhost:3000/api/calls';
 
+// --- EFFECTS & EASTER EGGS ---
+function honkHorn() {
+    const hornAudio = new Audio('https://actions.google.com/sounds/v1/transportation/truck_horn.ogg');
+    hornAudio.volume = 0.4;
+    hornAudio.play().catch(e => console.log("Audio playback blocked by browser"));
+
+    // Flashing the headlights high-beam
+    const headlights = document.querySelectorAll('.headlight-beam');
+    headlights.forEach(hl => {
+        const oldFilter = hl.style.filter;
+        hl.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 1)) scale(1.1)';
+        setTimeout(() => { hl.style.filter = oldFilter; }, 400);
+    });
+}
+
 // --- STATE MANAGEMENT ---
 let operators = [];
 let agencies = [];

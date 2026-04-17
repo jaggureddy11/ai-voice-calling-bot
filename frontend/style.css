@@ -108,6 +108,8 @@ body {
     opacity: 1; /* Fully solid and realistic */
     filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7)); /* Ambient occlusion on road */
     animation: busDriveFg 14s cubic-bezier(0.2, 0, 0.8, 1) infinite;
+    pointer-events: auto; /* Enable clicking */
+    cursor: pointer;
 }
 
 @keyframes busDriveFg {
