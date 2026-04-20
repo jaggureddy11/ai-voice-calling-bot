@@ -213,53 +213,35 @@ body {
     right: 0;
     height: 25vh;
     background: #000000;
-    /* High-fidelity asphalt texture */
-    background-image:
-        /* Shoulder lines (Top & Bottom) - Brighter for visibility */
-        linear-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 2px),
-        linear-gradient(to top, rgba(255, 255, 255, 0.15) 2px, transparent 2px),
-        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
     box-shadow: inset 0 30px 60px rgba(0, 0, 0, 1);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     z-index: 2;
     overflow: hidden;
 }
 
-/* Multi-lane highway markings - Dual Lanes */
+/* High-Contrast Highway Bars */
 .road-lanes {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 0;
-    transform: translateY(-50%);
     width: 100%;
-    height: 100px; /* Branded spacing */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    z-index: 5;
+    height: 100%;
+    z-index: 10;
     pointer-events: none;
+    background-image: 
+        /* Lane 1 */
+        repeating-linear-gradient(90deg, #ffffff, #ffffff 180px, transparent 180px, transparent 360px),
+        /* Lane 2 */
+        repeating-linear-gradient(90deg, #ffffff, #ffffff 180px, transparent 180px, transparent 360px);
+    background-size: 360px 10px; /* Depth of lane lines */
+    background-repeat: repeat-x;
+    background-position: 0 35%, 0 65%; /* Two lanes at relative heights */
+    animation: slideLanesSimple 0.5s linear infinite;
 }
 
-.road-lanes::before,
-.road-lanes::after {
-    content: '';
-    display: block;
-    width: 200%; /* Wider for the slide animation */
-    height: 10px; /* Thicker bars */
-    background-image: linear-gradient(90deg,
-            #ffffff 0%,
-            #ffffff 150px,
-            transparent 150px,
-            transparent 300px);
-    background-size: 300px 100%;
-    opacity: 1;
-    animation: slideLanes 0.4s linear infinite;
-}
-
-/* Match animation pull to background size for seamless loop */
-@keyframes slideLanes { 
-    0% { transform: translateX(0); } 
-    100% { transform: translateX(-300px); } 
+@keyframes slideLanesSimple {
+    from { background-position: 0 35%, 0 65%; }
+    to { background-position: -360px 35%, -360px 65%; }
 }
 
 /* Day Mode Road Adaptation - Keeping it Black Tar as requested */
@@ -268,13 +250,10 @@ body {
     border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.light-mode .road-lanes::before,
-.light-mode .road-lanes::after {
-    background-image: linear-gradient(90deg,
-            #ffffff 0%,
-            #ffffff 150px,
-            transparent 150px,
-            transparent 300px);
+.light-mode .road-lanes {
+    background-image: 
+        repeating-linear-gradient(90deg, #ffffff, #ffffff 180px, transparent 180px, transparent 360px),
+        repeating-linear-gradient(90deg, #ffffff, #ffffff 180px, transparent 180px, transparent 360px);
     opacity: 1;
 }
 
