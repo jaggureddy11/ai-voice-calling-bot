@@ -74,7 +74,7 @@ body {
 
 .city-skyline-bg {
     position: absolute;
-    bottom: 25vh; left: 0; 
+    bottom: 18vh; left: 0; 
     height: 45vh; width: 100%;
     background-image: 
         radial-gradient(circle at 50% 100%, rgba(40, 40, 60, 0.4) 0%, transparent 80%),
@@ -89,7 +89,7 @@ body {
 /* Far Background Buildings - Detailed Skyscrapers */
 .buildings-layer {
     position: absolute;
-    bottom: 25vh; left: 0; 
+    bottom: 18vh; left: 0; 
     height: 40vh; width: 100%;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='400'%3E%3Cdefs%3E%3ClinearGradient id='b1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%231a1a2b'/%3E%3Cstop offset='100%25' stop-color='%23050508'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.1)'/%3E%3Cstop offset='100%25' stop-color='transparent'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3C!-- Skyscraper 1 --%3E%3Crect x='50' y='80' width='120' height='320' fill='url(%23b1)'/%3E%3Crect x='60' y='100' width='100' height='2' fill='%23ffd43b' opacity='0.4'/%3E%3Crect x='60' y='110' width='100' height='2' fill='%23ffd43b' opacity='0.2'/%3E%3Crect x='60' y='150' width='30' height='40' fill='url(%23glass)'/%3E%3Cline x1='110' y1='30' x2='110' y2='80' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='110' cy='30' r='2' fill='%23f00'/%3E%3C!-- Skyscraper 2 --%3E%3Crect x='300' y='160' width='80' height='240' fill='url(%23b1)'/%3E%3Crect x='310' y='180' width='60' height='3' fill='%23fff' opacity='0.1'/%3E%3Crect x='340' y='210' width='20' height='20' fill='rgba(255,212,59,0.3)'/%3E%3C!-- Modern Cluster --%3E%3Cpath d='M500 120 L650 120 L650 400 L500 400 Z' fill='url(%23b1)'/%3E%3Cpath d='M500 120 L575 80 L650 120' fill='%231a1a2b'/%3E%3Crect x='520' y='140' width='5' height='200' fill='url(%23glass)'/%3E%3Crect x='625' y='140' width='5' height='200' fill='url(%23glass)'/%3E%3Crect x='560' y='100' width='30' height='4' fill='%23ffd43b' opacity='0.6'/%3E%3C!-- Spaced Towers --%3E%3Crect x='900' y='40' width='60' height='360' fill='url(%23b1)'/%3E%3Crect x='1300' y='140' width='140' height='260' fill='url(%23b1)'/%3E%3Cline x1='1370' y1='100' x2='1370' y2='140' stroke='%23444' stroke-width='3'/%3E%3Ccircle cx='1370' cy='100' r='4' fill='%23f00' opacity='0.8'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 2000px 100%;
@@ -101,7 +101,7 @@ body {
 /* Mid-Ground Houses - Detailed Residential Scenes */
 .houses-layer {
     position: absolute;
-    bottom: 25vh; left: 0;
+    bottom: 18vh; left: 0;
     height: 18vh; width: 100%;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='200'%3E%3Cdefs%3E%3ClinearGradient id='h-grad' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23222233'/%3E%3Cstop offset='100%25' stop-color='%230c0c12'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3C!-- Classic Gabled House --%3E%3Crect x='100' y='100' width='100' height='100' fill='url(%23h-grad)'/%3E%3Cpath d='M80 100 L150 50 L220 100 Z' fill='%231a1a25'/%3E%3Crect x='135' y='140' width='30' height='60' fill='%23000'/%3E%3Crect x='115' y='120' width='20' height='20' fill='rgba(255,212,59,0.2)'/%3E%3Crect x='165' y='120' width='20' height='20' fill='rgba(255,212,59,0.4)'/%3E%3C!-- Modern Flat House --%3E%3Crect x='350' y='130' width='140' height='70' fill='url(%23h-grad)'/%3E%3Crect x='350' y='120' width='140' height='10' fill='%232d3748'/%3E%3Crect x='440' y='150' width='40' height='50' fill='%23111'/%3E%3Crect x='370' y='145' width='50' height='10' fill='rgba(255,255,255,0.05)'/%3E%3C!-- Small Cottage --%3E%3Crect x='600' y='140' width='80' height='60' fill='url(%23h-grad)'/%3E%3Cpath d='M590 140 L640 100 L690 140 Z' fill='%231a1a25'/%3E%3Crect x='660' y='105' width='12' height='25' fill='%23111'/%3E%3C!-- Picket Fence segments --%3E%3Crect x='720' y='180' width='4' height='20' fill='%23333'/%3E%3Crect x='730' y='180' width='4' height='20' fill='%23333'/%3E%3Crect x='740' y='180' width='4' height='20' fill='%23333'/%3E%3C!-- Repeated spacing --%3E%3Crect x='1000' y='110' width='110' height='90' fill='url(%23h-grad)'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 1500px 100%;
@@ -113,7 +113,7 @@ body {
 /* Foreground Trees - Multi-shaded organic trees */
 .trees-layer {
     position: absolute;
-    bottom: 25vh; left: 0;
+    bottom: 18vh; left: 0;
     height: 14vh; width: 100%;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='150'%3E%3Cg%3E%3C!-- Pine Cluster --%3E%3Cpath d='M50 150 L100 20 L150 150 Z' fill='%230a1f0a'/%3E%3Cpath d='M65 110 L100 50 L135 110 Z' fill='%23051405'/%3E%3Cpath d='M200 150 L240 50 L280 150 Z' fill='%230a1f0a'/%3E%3C!-- Rounded Oak-like --%3E%3Ccircle cx='450' cy='100' r='45' fill='%230d250d'/%3E%3Ccircle cx='420' cy='110' r='30' fill='%230a1a0a'/%3E%3Ccircle cx='480' cy='110' r='30' fill='%230a1a0a'/%3E%3Crect x='445' y='130' width='10' height='20' fill='%23000'/%3E%3C!-- Slim poplars --%3E%3Cellipse cx='700' cy='80' rx='20' ry='70' fill='%230a1f0a'/%3E%3Cellipse cx='740' cy='90' rx='15' ry='60' fill='%23051405'/%3E%3Crect x='698' y='140' width='4' height='10' fill='%23000'/%3E%3C!-- Repeated Cluster --%3E%3Ccircle cx='1000' cy='110' r='35' fill='%230a1f0a'/%3E%3Ccircle cx='1040' cy='100' r='45' fill='%230d250d'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 1200px 100%;
@@ -123,29 +123,49 @@ body {
 }
 
 /* MOON/SUN - Theme Switcher */
+/* MOON/SUN - Theme Switcher with Realistic Textures */
 .moon {
     position: absolute;
     top: 3vh;
     right: 5vw;
-    width: 100px; /* Reduced for better mobile spacing */
+    width: 100px;
     height: 100px;
-    background: #e1e1e1;
+    background: #fdfdfd;
     border-radius: 50%;
-    z-index: 1;
+    z-index: 10;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3CradialGradient id='dg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23bbb'/%3E%3Cstop offset='100%25' stop-color='%23999'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='40' r='10' fill='url(%23dg)' opacity='0.5'/%3E%3Ccircle cx='70' cy='30' r='16' fill='url(%23dg)' opacity='0.3'/%3E%3Ccircle cx='80' cy='70' r='8' fill='url(%23dg)' opacity='0.4'/%3E%3Ccircle cx='40' cy='90' r='12' fill='url(%23dg)' opacity='0.2'/%3E%3Ccircle cx='90' cy='90' r='6' fill='url(%23dg)' opacity='0.5'/%3E%3C/svg%3E%3C/svg%3E");
-    box-shadow: inset -20px -10px 30px rgba(0,0,0,0.15), 0 0 60px rgba(255, 255, 255, 0.3);
-    opacity: 0.85;
-    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    /* High-Fidelity Lunar Surface */
+    background-image: 
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3Cfilter id='f1' x='0' y='0'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='1' /%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23f1)'%3E%3Ccircle cx='35' cy='35' r='12' fill='%23d1d1d1' opacity='0.6'/%3E%3Ccircle cx='75' cy='25' r='18' fill='%23c1c1c1' opacity='0.4'/%3E%3Ccircle cx='85' cy='75' r='10' fill='%23b1b1b1' opacity='0.5'/%3E%3Ccircle cx='45' cy='85' r='15' fill='%23d1d1d1' opacity='0.3'/%3E%3Ccircle cx='20' cy='60' r='6' fill='%23c1c1c1' opacity='0.4'/%3E%3Ccircle cx='55' cy='15' r='8' fill='%23b1b1b1' opacity='0.2'/%3E%3C/g%3E%3C/svg%3E");
+    background-blend-mode: overlay;
+    box-shadow: 
+        inset -15px -15px 30px rgba(0,0,0,0.3), 
+        0 0 40px rgba(200, 220, 255, 0.2),
+        0 0 80px rgba(200, 220, 255, 0.1);
+    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
 }
 
-/* Sun state when in light mode */
+.moon::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Realistic Radiant Yellow Sun state */
 .light-mode .moon {
-    background: #FFD700;
-    background-image: radial-gradient(circle at 30% 30%, #FFF7AD 0%, #FFD700 70%);
-    box-shadow: 0 0 100px #FFB800, 0 0 200px rgba(255, 184, 0, 0.4);
+    background: #ffcc33;
+    background-image: radial-gradient(circle at center, #fff200 0%, #ffcc33 50%, #ff9900 100%);
+    box-shadow: 
+        0 0 50px #fff200,
+        0 0 100px #ffcc33,
+        0 0 200px rgba(255, 204, 51, 0.5);
     opacity: 1;
-    top: 5vh;
+    top: 6vh;
+    transform: scale(1.1);
 }
 
 .light-mode .city-skyline-bg { opacity: 0.1; filter: grayscale(1) invert(1); }
@@ -188,7 +208,7 @@ body {
 /* HIGH SPEED REALISTIC STREETLIGHTS */
 .streetlights {
     position: absolute;
-    bottom: 25vh; left: 0;
+    bottom: 18vh; left: 0;
     width: 100%; height: 40vh;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3000' height='400'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3C!-- Light --%3E%3Cg transform='translate(1500, 0)'%3E%3Crect x='0' y='130' width='3' height='270' fill='%23222'/%3E%3Cpath d='M 0 130 Q -40 100 -70 100' stroke='%23333' stroke-width='4' fill='none'/%3E%3Ccircle cx='-70' cy='102' r='20' fill='rgba(255,220,100,0.25)' filter='url(%23glow)'/%3E%3Ccircle cx='-70' cy='102' r='6' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 3000px 100%;
@@ -210,7 +230,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 25vh;
+    height: 18vh;
     background: #000000;
     box-shadow: inset 0 30px 60px rgba(0, 0, 0, 1);
     border-top: 1px solid rgba(255, 255, 255, 0.15);
@@ -270,7 +290,7 @@ body {
 }
 
 .bus-fg {
-    bottom: 12vh; /* Centered on the road lanes */
+    bottom: 8vh; /* Centered on the road lanes */
     width: 600px;
     opacity: 1; 
     filter: drop-shadow(0 30px 20px rgba(0,0,0,0.9)); /* Stronger ambient shadow */
@@ -595,6 +615,129 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
 
+/* PREMIUM ROBOTIC DIAGNOSTIC ANIMATION */
+.repair-cinema {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    min-height: 500px;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 40px auto;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.bus-blueprint {
+    position: relative;
+    width: 480px;
+    height: 140px;
+    background: #c0392b; /* Premium Red Body */
+    border-radius: 10px 80px 5px 5px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset -20px 0 40px rgba(0,0,0,0.3);
+    animation: busSlightShake 4s ease-in-out infinite;
+    z-index: 5;
+}
+
+@keyframes busSlightShake {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.robotic-arm {
+    position: absolute;
+    top: 20px; left: 0;
+    width: 4px; height: 100px;
+    background: #444;
+    z-index: 10;
+    transform-origin: top center;
+    animation: armScan 6s ease-in-out infinite;
+}
+
+.robotic-arm::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: -2px;
+    width: 8px; height: 8px;
+    background: #666;
+    border-radius: 50%;
+}
+
+.laser-beam {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 2px; height: 300px;
+    background: rgba(46, 204, 113, 0.6);
+    box-shadow: 0 0 15px #2ecc71;
+    transform: rotate(180deg);
+}
+
+@keyframes armScan {
+    0%, 100% { left: 10%; transform: rotate(-10deg); }
+    50% { left: 80%; transform: rotate(10deg); }
+}
+
+.window-pane {
+    height: 45px; top: 15px;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: absolute;
+    z-index: 6;
+}
+
+.wheel-part {
+    width: 65px; height: 65px;
+    background: #111;
+    border: 6px solid #222;
+    border-radius: 50%;
+    bottom: -32px;
+    position: absolute;
+    z-index: 7;
+    animation: wheelRotate 1.5s linear infinite;
+}
+
+@keyframes wheelRotate { to { transform: rotate(360deg); } }
+
+.repair-status-text {
+    margin-top: 60px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    animation: textPulse 2s infinite alternate;
+}
+
+.repair-tag {
+    color: #2ecc71 !important;
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+@keyframes textPulse {
+    from { opacity: 0.6; color: rgba(255,255,255,0.6); }
+    to { opacity: 1; color: #fff; text-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+}
+
+.cinema-particles {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: gridPan 10s linear infinite;
+    mask-image: radial-gradient(circle, black, transparent 70%);
+}
+
+@keyframes gridPan {
+    from { background-position: 0 0; }
+    to { background-position: 100px 100px; }
+}
+
 /* MEDIA QUERIES FOR MOBILE FRIENDLINESS */
 @media (max-width: 1024px) {
     .views-wrapper { padding: 0 30px 30px 30px; }
@@ -661,9 +804,9 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
     /* Landing Screen Extra Small Adjustments */
     .landing-logo { font-size: 2.2rem; }
     .landing-tagline { font-size: 0.75rem; letter-spacing: 1.5px; }
-    .bus-fg { width: 300px; bottom: 15vh; animation-duration: 10s; }
+    .bus-fg { width: 300px; bottom: 5vh; animation-duration: 10s; }
     .hero-bus-svg { width: 300px; }
-    .road-lanes { height: 6px; top: 60%; }
+    .road-lanes { height: 6px; top: 50%; }
     .moon { width: 60px; height: 60px; }
     .landing-btn { padding: 12px 20px; font-size: 0.8rem; }
 
