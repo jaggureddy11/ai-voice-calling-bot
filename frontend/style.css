@@ -218,33 +218,26 @@ body {
     overflow: hidden;
 }
 
-/* High-Contrast Highway Markings - Multi-Lane Expressway */
+/* Clean Single-Lane Highway Markings */
 .road-lanes {
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 8px;
     z-index: 10;
     pointer-events: none;
     background-image: 
-        /* Top Solid Shoulder */
-        linear-gradient(90deg, #ffffff 100%, transparent) ,
-        /* Bottom Solid Shoulder */
-        linear-gradient(90deg, #ffffff 100%, transparent),
-        /* Dash Lane 1 */
-        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 120px, transparent 120px, transparent 240px),
-        /* Dash Lane 2 */
-        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 120px, transparent 120px, transparent 240px);
-    background-size: 100% 4px, 100% 4px, 240px 6px, 240px 6px; 
-    background-repeat: no-repeat, no-repeat, repeat-x, repeat-x;
-    background-position: 0 5%, 0 95%, 0 35%, 0 65%;
-    animation: slideLanesExpressway 5s linear infinite;
+        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 180px, transparent 180px, transparent 360px);
+    background-size: 360px 100%; 
+    background-repeat: repeat-x;
+    transform: translateY(-50%);
+    animation: slideLaneCenter 5s linear infinite;
 }
 
-@keyframes slideLanesExpressway {
-    from { background-position: 0 5%, 0 95%, 0 35%, 0 65%; }
-    to { background-position: 0 5%, 0 95%, -240px 35%, -240px 65%; }
+@keyframes slideLaneCenter {
+    from { background-position: 0 0; }
+    to { background-position: -360px 0; }
 }
 
 /* Day Mode Road Adaptation - Keeping it Black Tar as requested */
@@ -254,18 +247,11 @@ body {
 }
 
 .light-mode .road-lanes {
+    top: 50%;
+    height: 8px;
     background-image: 
-        /* Top Solid Shoulder */
-        linear-gradient(90deg, #ffffff 100%, transparent) ,
-        /* Bottom Solid Shoulder */
-        linear-gradient(90deg, #ffffff 100%, transparent),
-        /* Dash Lane 1 */
-        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 120px, transparent 120px, transparent 240px),
-        /* Dash Lane 2 */
-        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 120px, transparent 120px, transparent 240px);
-    background-size: 100% 4px, 100% 4px, 240px 6px, 240px 6px; 
-    background-repeat: no-repeat, no-repeat, repeat-x, repeat-x;
-    background-position: 0 5%, 0 95%, 0 35%, 0 65%;
+        repeating-linear-gradient(90deg, #ffffff 0, #ffffff 180px, transparent 180px, transparent 360px);
+    background-size: 360px 100%; 
     opacity: 1;
 }
 
