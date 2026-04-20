@@ -60,17 +60,22 @@ body {
 .landing-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 10vh;
+    padding-top: 15vh;
     background: var(--bg-landing);
     transition: background 1s ease-in-out, opacity 1s ease, visibility 1s;
     overflow: hidden; 
     z-index: 100;
 }
 
-/* Animated Background Scenery */
+/* Animated Background Scenery - OPTIMIZED FOR SMOOTHNESS */
+.city-skyline-bg, .buildings-layer, .houses-layer, .trees-layer, .streetlights, .road-lanes {
+    will-change: background-position;
+    transform: translateZ(0); /* Hardware acceleration hint */
+}
+
 .city-skyline-bg {
     position: absolute;
-    bottom: 18vh; left: 0; 
+    bottom: 25vh; left: 0; 
     height: 45vh; width: 100%;
     background-image: 
         radial-gradient(circle at 50% 100%, rgba(40, 40, 60, 0.4) 0%, transparent 80%),
@@ -78,19 +83,44 @@ body {
     background-size: 100% 100%, 1200px 100%;
     background-repeat: no-repeat, repeat-x;
     background-position: center bottom, 0 bottom;
-    animation: none, bgPanSlow 120s linear infinite;
+    animation: bgPanSlower 240s linear infinite;
     z-index: 1;
 }
 
-/* Foreground detailed skyline - REFINED SILHOUETTES */
-.city-skyline-fg {
-    height: 45vh;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2400' height='400'%3E%3Cdefs%3E%3ClinearGradient id='build_grad' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%231a1a25'/%3E%3Cstop offset='100%25' stop-color='%230a0a0c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg transform='translate(0, 40)'%3E%3C!-- Building 1 --%3E%3Crect x='100' y='180' width='160' height='220' fill='url(%23build_grad)'/%3E%3Crect x='120' y='210' width='3' height='3' fill='%23ffd43b' opacity='0.7'/%3E%3Crect x='160' y='230' width='3' height='3' fill='%23fff' opacity='0.4'/%3E%3Ccircle cx='110' cy='180' r='1.5' fill='%23f00' opacity='0.8'/%3E%3C!-- Building 2 --%3E%3Crect x='380' y='30' width='80' height='370' fill='url(%23build_grad)'/%3E%3Cline x1='420' y1='-10' x2='420' y2='30' stroke='%23444' stroke-width='2'/%3E%3Ccircle cx='420' cy='-10' r='2.5' fill='%23f00'/%3E%3Crect x='400' y='70' width='40' height='2' fill='%23ffd43b' opacity='0.7'/%3E%3C!-- Building 3 --%3E%3Crect x='650' y='200' width='240' height='200' fill='url(%23build_grad)'/%3E%3Crect x='680' y='230' width='4' height='4' fill='%23fff' opacity='0.5'/%3E%3Crect x='780' y='240' width='4' height='4' fill='%23ffd43b' opacity='0.7'/%3E%3C!-- Building 4 --%3E%3Cpath d='M1050 120 L1200 120 L1200 400 L1000 400 L1000 170 L1050 170 Z' fill='url(%23build_grad)'/%3E%3Crect x='1030' y='150' width='5' height='5' fill='%23ffd43b' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 2400px 100%;
-    background-position: 0 bottom;
-    animation: bgPanMedium 70s linear infinite;
+/* Far Background Buildings - Detailed Skyscrapers */
+.buildings-layer {
+    position: absolute;
+    bottom: 25vh; left: 0; 
+    height: 40vh; width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='400'%3E%3Cdefs%3E%3ClinearGradient id='b1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%231a1a2b'/%3E%3Cstop offset='100%25' stop-color='%23050508'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='rgba(255,255,255,0.1)'/%3E%3Cstop offset='100%25' stop-color='transparent'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3C!-- Skyscraper 1 --%3E%3Crect x='50' y='80' width='120' height='320' fill='url(%23b1)'/%3E%3Crect x='60' y='100' width='100' height='2' fill='%23ffd43b' opacity='0.4'/%3E%3Crect x='60' y='110' width='100' height='2' fill='%23ffd43b' opacity='0.2'/%3E%3Crect x='60' y='150' width='30' height='40' fill='url(%23glass)'/%3E%3Cline x1='110' y1='30' x2='110' y2='80' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='110' cy='30' r='2' fill='%23f00'/%3E%3C!-- Skyscraper 2 --%3E%3Crect x='300' y='160' width='80' height='240' fill='url(%23b1)'/%3E%3Crect x='310' y='180' width='60' height='3' fill='%23fff' opacity='0.1'/%3E%3Crect x='340' y='210' width='20' height='20' fill='rgba(255,212,59,0.3)'/%3E%3C!-- Modern Cluster --%3E%3Cpath d='M500 120 L650 120 L650 400 L500 400 Z' fill='url(%23b1)'/%3E%3Cpath d='M500 120 L575 80 L650 120' fill='%231a1a2b'/%3E%3Crect x='520' y='140' width='5' height='200' fill='url(%23glass)'/%3E%3Crect x='625' y='140' width='5' height='200' fill='url(%23glass)'/%3E%3Crect x='560' y='100' width='30' height='4' fill='%23ffd43b' opacity='0.6'/%3E%3C!-- Spaced Towers --%3E%3Crect x='900' y='40' width='60' height='360' fill='url(%23b1)'/%3E%3Crect x='1300' y='140' width='140' height='260' fill='url(%23b1)'/%3E%3Cline x1='1370' y1='100' x2='1370' y2='140' stroke='%23444' stroke-width='3'/%3E%3Ccircle cx='1370' cy='100' r='4' fill='%23f00' opacity='0.8'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 2000px 100%;
+    background-repeat: repeat-x;
+    animation: bgPanSlower 180s linear infinite;
     z-index: 1;
-    opacity: 1; /* Full visibility for foreground */
+}
+
+/* Mid-Ground Houses - Detailed Residential Scenes */
+.houses-layer {
+    position: absolute;
+    bottom: 25vh; left: 0;
+    height: 18vh; width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='200'%3E%3Cdefs%3E%3ClinearGradient id='h-grad' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23222233'/%3E%3Cstop offset='100%25' stop-color='%230c0c12'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3C!-- Classic Gabled House --%3E%3Crect x='100' y='100' width='100' height='100' fill='url(%23h-grad)'/%3E%3Cpath d='M80 100 L150 50 L220 100 Z' fill='%231a1a25'/%3E%3Crect x='135' y='140' width='30' height='60' fill='%23000'/%3E%3Crect x='115' y='120' width='20' height='20' fill='rgba(255,212,59,0.2)'/%3E%3Crect x='165' y='120' width='20' height='20' fill='rgba(255,212,59,0.4)'/%3E%3C!-- Modern Flat House --%3E%3Crect x='350' y='130' width='140' height='70' fill='url(%23h-grad)'/%3E%3Crect x='350' y='120' width='140' height='10' fill='%232d3748'/%3E%3Crect x='440' y='150' width='40' height='50' fill='%23111'/%3E%3Crect x='370' y='145' width='50' height='10' fill='rgba(255,255,255,0.05)'/%3E%3C!-- Small Cottage --%3E%3Crect x='600' y='140' width='80' height='60' fill='url(%23h-grad)'/%3E%3Cpath d='M590 140 L640 100 L690 140 Z' fill='%231a1a25'/%3E%3Crect x='660' y='105' width='12' height='25' fill='%23111'/%3E%3C!-- Picket Fence segments --%3E%3Crect x='720' y='180' width='4' height='20' fill='%23333'/%3E%3Crect x='730' y='180' width='4' height='20' fill='%23333'/%3E%3Crect x='740' y='180' width='4' height='20' fill='%23333'/%3E%3C!-- Repeated spacing --%3E%3Crect x='1000' y='110' width='110' height='90' fill='url(%23h-grad)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 1500px 100%;
+    background-repeat: repeat-x;
+    animation: bgPanSlow 100s linear infinite;
+    z-index: 1;
+}
+
+/* Foreground Trees - Multi-shaded organic trees */
+.trees-layer {
+    position: absolute;
+    bottom: 25vh; left: 0;
+    height: 14vh; width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='150'%3E%3Cg%3E%3C!-- Pine Cluster --%3E%3Cpath d='M50 150 L100 20 L150 150 Z' fill='%230a1f0a'/%3E%3Cpath d='M65 110 L100 50 L135 110 Z' fill='%23051405'/%3E%3Cpath d='M200 150 L240 50 L280 150 Z' fill='%230a1f0a'/%3E%3C!-- Rounded Oak-like --%3E%3Ccircle cx='450' cy='100' r='45' fill='%230d250d'/%3E%3Ccircle cx='420' cy='110' r='30' fill='%230a1a0a'/%3E%3Ccircle cx='480' cy='110' r='30' fill='%230a1a0a'/%3E%3Crect x='445' y='130' width='10' height='20' fill='%23000'/%3E%3C!-- Slim poplars --%3E%3Cellipse cx='700' cy='80' rx='20' ry='70' fill='%230a1f0a'/%3E%3Cellipse cx='740' cy='90' rx='15' ry='60' fill='%23051405'/%3E%3Crect x='698' y='140' width='4' height='10' fill='%23000'/%3E%3C!-- Repeated Cluster --%3E%3Ccircle cx='1000' cy='110' r='35' fill='%230a1f0a'/%3E%3Ccircle cx='1040' cy='100' r='45' fill='%230d250d'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 1200px 100%;
+    background-repeat: repeat-x;
+    animation: bgPanMedium 50s linear infinite;
+    z-index: 1;
 }
 
 /* MOON/SUN - Theme Switcher */
@@ -98,8 +128,8 @@ body {
     position: absolute;
     top: 3vh;
     right: 5vw;
-    width: 120px;
-    height: 120px;
+    width: 100px; /* Reduced for better mobile spacing */
+    height: 100px;
     background: #e1e1e1;
     border-radius: 50%;
     z-index: 1;
@@ -119,8 +149,29 @@ body {
     top: 5vh;
 }
 
-.light-mode .city-skyline-bg { opacity: 0.15; filter: grayscale(1) invert(1); }
-.light-mode .city-skyline-fg { opacity: 0.8; filter: brightness(1.2); }
+.light-mode .city-skyline-bg { opacity: 0.1; filter: grayscale(1) invert(1); }
+
+/* Realistic Daylight Buildings */
+.light-mode .buildings-layer {
+    opacity: 0.6;
+    filter: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='400'%3E%3Cdefs%3E%3ClinearGradient id='b-light' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23e2e8f0'/%3E%3Cstop offset='100%25' stop-color='%23cbd5e0'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass-light' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2393c5fd'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3Crect x='50' y='80' width='120' height='320' fill='url(%23b-light)'/%3E%3Crect x='60' y='100' width='100' height='150' fill='url(%23glass-light)' opacity='0.3'/%3E%3Crect x='60' y='260' width='100' height='2' fill='%2394a3b8'/%3E%3Crect x='300' y='160' width='80' height='240' fill='%23cbd5e0'/%3E%3Crect x='310' y='180' width='60' height='5' fill='%2364748b' opacity='0.2'/%3E%3Cpath d='M500 120 L650 120 L650 400 L500 400 Z' fill='url(%23b-light)'/%3E%3Cpath d='M500 120 L575 80 L650 120' fill='%23cbd5e0'/%3E%3Crect x='520' y='140' width='30' height='40' fill='%2393c5fd' opacity='0.4'/%3E%3Crect x='560' y='140' width='30' height='40' fill='%2393c5fd' opacity='0.4'/%3E%3Crect x='900' y='40' width='60' height='360' fill='%23cbd5e0'/%3E%3Crect x='1300' y='140' width='140' height='260' fill='url(%23b-light)'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Realistic Daylight Houses */
+.light-mode .houses-layer {
+    opacity: 1;
+    filter: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='200'%3E%3Cg%3E%3Crect x='100' y='100' width='100' height='100' fill='%23f1f5f9'/%3E%3Cpath d='M80 100 L150 50 L220 100 Z' fill='%23c2410c'/%3E%3Crect x='135' y='140' width='30' height='60' fill='%23475569'/%3E%3Crect x='350' y='130' width='140' height='70' fill='%23e2e8f0'/%3E%3Crect x='350' y='120' width='140' height='10' fill='%2364748b'/%3E%3Crect x='600' y='140' width='80' height='60' fill='%23f8fafc'/%3E%3Cpath d='M590 140 L640 100 L690 140 Z' fill='%237c2d12'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Vibrant Green Daylight Trees */
+.light-mode .trees-layer {
+    opacity: 1;
+    filter: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='150'%3E%3Cg%3E%3Cpath d='M50 150 L100 20 L150 150 Z' fill='%23166534'/%3E%3Cpath d='M65 110 L100 50 L135 110 Z' fill='%2315803d'/%3E%3Cpath d='M200 150 L240 50 L280 150 Z' fill='%23166534'/%3E%3Ccircle cx='450' cy='100' r='45' fill='%2314532d'/%3E%3Ccircle cx='420' cy='110' r='30' fill='%23166534'/%3E%3Ccircle cx='480' cy='110' r='30' fill='%23166534'/%3E%3Cellipse cx='700' cy='80' rx='20' ry='70' fill='%23365314'/%3E%3Cellipse cx='740' cy='90' rx='15' ry='60' fill='%233f6212'/%3E%3Ccircle cx='1000' cy='110' r='35' fill='%23166534'/%3E%3Ccircle cx='1040' cy='100' r='45' fill='%2315803d'/%3E%3C/g%3E%3C/svg%3E");
+}
+
 .light-mode .streetlights { opacity: 0; pointer-events: none; visibility: hidden; }
 
 /* Invert Logo/Text colors for readability in day mode */
@@ -138,7 +189,7 @@ body {
 /* HIGH SPEED REALISTIC STREETLIGHTS */
 .streetlights {
     position: absolute;
-    bottom: 18vh; left: 0;
+    bottom: 25vh; left: 0;
     width: 100%; height: 40vh;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3000' height='400'%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='5' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3C!-- Light --%3E%3Cg transform='translate(1500, 0)'%3E%3Crect x='0' y='130' width='3' height='270' fill='%23222'/%3E%3Cpath d='M 0 130 Q -40 100 -70 100' stroke='%23333' stroke-width='4' fill='none'/%3E%3Ccircle cx='-70' cy='102' r='20' fill='rgba(255,220,100,0.25)' filter='url(%23glow)'/%3E%3Ccircle cx='-70' cy='102' r='6' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 3000px 100%;
@@ -148,54 +199,56 @@ body {
     animation: bgPanFast 3.5s linear infinite;
 }
 
-/* Parallax infinite panning keyframes mapped to exact SVG widths */
-@keyframes bgPanSlow { 0% { background-position-x: 0px; } 100% { background-position-x: -400px; } }
-@keyframes bgPanMedium { 0% { background-position-x: 0px; } 100% { background-position-x: -1200px; } }
-@keyframes bgPanFast { 0% { background-position-x: 0px; } 100% { background-position-x: -1500px; } }
-@keyframes slideLanes { 0% { background-position-x: 0px; } 100% { background-position-x: -240px; } }
+/* Parallax infinite panning keyframes */
+@keyframes bgPanSlower { 0% { background-position-x: 0px; } 100% { background-position-x: -1600px; } }
+@keyframes bgPanSlow { 0% { background-position-x: 0px; } 100% { background-position-x: -1200px; } }
+@keyframes bgPanMedium { 0% { background-position-x: 0px; } 100% { background-position-x: -1000px; } }
+@keyframes bgPanFast { 0% { background-position-x: 0px; } 100% { background-position-x: -3000px; } }
 
 /* SLEEK PREMIUM ROAD SCENE */
 .road-surface {
     position: absolute;
     bottom: 0; left: 0; right: 0; 
-    height: 25vh; /* Slightly taller for better perspective */
-    background: #050505; /* Deep obsidian asphalt */
-    /* High-fidelity asphalt texture */
+    height: 25vh;
+    background: #0a0a0a; /* Realistic black tar */
+    /* High-fidelity asphalt texture with grain and subtle shine */
     background-image: 
-        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
     box-shadow: inset 0 30px 60px rgba(0, 0, 0, 1);
-    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    border-top: 1px solid rgba(255, 255, 255, 0.15); 
     z-index: 2;
     overflow: hidden;
 }
 
-/* High-speed motion streaks - IMPROVED VISIBILITY */
+/* Multi-lane motion streaks - Centered and Refined */
 .road-lanes {
     position: absolute;
-    top: 50%; width: 200%; height: 5px;
+    top: 48%; /* Perfectly centered in the road's perspective */
+    width: 200%; height: 6px; /* Sleeker bar height */
     background-image: linear-gradient(90deg, 
         #ffffff 0%, 
-        #ffffff 50%, 
-        transparent 50%, 
+        #ffffff 40%, 
+        transparent 40%, 
         transparent 100%);
-    background-size: 240px 100%;
-    opacity: 0.95; /* Sharp white lines */
+    background-size: 250px 100%; /* Longer bars with more gap */
+    opacity: 0.9; 
+    z-index: 10;
     animation: slideLanes 0.4s linear infinite;
 }
 
-/* Day Mode Road Adaptation */
+/* Match animation pull to background size for seamless loop */
+@keyframes slideLanes { 0% { background-position-x: 0px; } 100% { background-position-x: -250px; } }
+
+/* Day Mode Road Adaptation - Keeping it Black Tar as requested */
 .light-mode .road-surface {
-    background-color: #d1d5db;
-    background-image: 
-        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.8) 0%, transparent 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-    border-top: 2px solid rgba(0,0,0,0.1);
+    background-color: #0c0c0c; 
+    border-top: 1px solid rgba(0,0,0,0.2);
 }
 .light-mode .road-lanes {
     background-image: linear-gradient(90deg, 
-        rgba(255,255,255,0.9) 0%, 
-        rgba(255,255,255,0.9) 40%, 
+        #ffffff 0%, 
+        #ffffff 40%, 
         transparent 40%, 
         transparent 100%);
     opacity: 1;
@@ -206,27 +259,28 @@ body {
     left: -600px;
     z-index: 3;
     pointer-events: none;
+    will-change: transform;
 }
 
 .hero-bus-svg {
-    width: 100%; height: auto;
+    width: 600px; height: auto;
     animation: busHover 2.5s ease-in-out infinite alternate;
     overflow: visible;
 }
 
 .bus-fg {
-    bottom: 8vh; /* Positioned perfectly on the upper half of the highway lanes */
+    bottom: 12vh; /* Centered on the road lanes */
     width: 600px;
-    opacity: 1; /* Fully solid and realistic */
-    filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7)); /* Ambient occlusion on road */
-    animation: busDriveFg 14s cubic-bezier(0.2, 0, 0.8, 1) infinite;
-    pointer-events: auto; /* Enable clicking */
+    opacity: 1; 
+    filter: drop-shadow(0 30px 20px rgba(0,0,0,0.9)); /* Stronger ambient shadow */
+    animation: busDriveFg 8s cubic-bezier(0.2, 0, 0.8, 1) infinite; /* Faster appearance rate */
+    pointer-events: auto; 
     cursor: pointer;
 }
 
 @keyframes busDriveFg {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(calc(100vw + 1200px)); }
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(calc(100vw + 1200px), 0, 0); }
 }
 
 @keyframes busHover {
@@ -261,6 +315,8 @@ body {
     transform: translateX(-50%);
     text-align: center; 
     z-index: 20;
+    width: 90%; /* For mobile responsiveness */
+    max-width: 800px;
 }
 .landing-logo { 
     font-family: 'Playfair Display', serif; 
@@ -269,6 +325,7 @@ body {
     letter-spacing: 2px; 
     margin-bottom: 20px; 
     color: #ffffff;
+    transition: font-size 0.5s ease;
 }
 .landing-tagline { 
     color: var(--text-muted); 
@@ -277,6 +334,7 @@ body {
     font-weight: 300; 
     letter-spacing: 3px; 
     text-transform: uppercase;
+    transition: font-size 0.5s ease;
 }
 .landing-btn { 
     opacity: 0; transform: translateY(20px); 
@@ -284,8 +342,6 @@ body {
     font-size: 0.9rem; 
     letter-spacing: 2px;
 }
-
-@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
 /* APP LAYOUT */
 .app-container {
@@ -533,6 +589,13 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
 }
 
 @media (max-width: 768px) {
+    /* Landing Screen Mobile Adjustments */
+    .landing-logo { font-size: 3rem; }
+    .landing-tagline { font-size: 0.9rem; letter-spacing: 2px; }
+    .bus-fg { width: 400px; bottom: 10vh; }
+    .hero-bus-svg { width: 400px; }
+    .moon { width: 80px; height: 80px; right: 8vw; top: 2vh; }
+
     .app-container { flex-direction: column; }
     /* Horizontal Sidebar */
     .sidebar { 
@@ -581,6 +644,15 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; text-transform: uppe
 }
 
 @media (max-width: 480px) {
+    /* Landing Screen Extra Small Adjustments */
+    .landing-logo { font-size: 2.2rem; }
+    .landing-tagline { font-size: 0.75rem; letter-spacing: 1.5px; }
+    .bus-fg { width: 300px; bottom: 15vh; animation-duration: 10s; }
+    .hero-bus-svg { width: 300px; }
+    .road-lanes { height: 6px; top: 60%; }
+    .moon { width: 60px; height: 60px; }
+    .landing-btn { padding: 12px 20px; font-size: 0.8rem; }
+
     .stats-row { grid-template-columns: 1fr; }
     .modal-body { padding: 25px; }
     .modal-header { padding: 25px; }
