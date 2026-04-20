@@ -215,6 +215,9 @@ body {
     background: #000000; /* Absolute deep black as requested */
     /* High-fidelity asphalt texture - extremely subtle for maximum depth */
     background-image:
+        /* Shoulder lines (Top & Bottom) */
+        linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(to top, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
         radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
     box-shadow: inset 0 30px 60px rgba(0, 0, 0, 1);
@@ -223,28 +226,37 @@ body {
     overflow: hidden;
 }
 
-/* Multi-lane motion streaks - Centered and Refined */
+/* Multi-lane highway markings - Dual Lanes */
 .road-lanes {
     position: absolute;
-    top: 48%;
-    /* Perfectly centered in the road's perspective */
+    top: 50%;
+    transform: translateY(-50%);
     width: 200%;
-    height: 8px;
-    /* Slightly thicker for visibility */
+    height: 60px; /* Area for multiple lanes */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    z-index: 10;
+}
+
+.road-lanes::before,
+.road-lanes::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 8px; /* Thick white bars */
     background-image: linear-gradient(90deg,
             #ffffff 0%,
             #ffffff 45%,
             transparent 45%,
             transparent 100%);
-    background-size: 260px 100%;
-    /* Elegant long ribbons */
-    opacity: 1; /* Maximum white contrast */
-    z-index: 10;
+    background-size: 280px 100%;
+    opacity: 1;
     animation: slideLanes 0.4s linear infinite;
 }
 
 /* Match animation pull to background size for seamless loop */
-@keyframes slideLanes { 0% { background-position-x: 0px; } 100% { background-position-x: -260px; } }
+@keyframes slideLanes { 0% { background-position-x: 0px; } 100% { background-position-x: -280px; } }
 
 /* Day Mode Road Adaptation - Keeping it Black Tar as requested */
 .light-mode .road-surface {
@@ -252,7 +264,8 @@ body {
     border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.light-mode .road-lanes {
+.light-mode .road-lanes::before,
+.light-mode .road-lanes::after {
     background-image: linear-gradient(90deg,
             #ffffff 0%,
             #ffffff 45%,
