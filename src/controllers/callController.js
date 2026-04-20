@@ -1,8 +1,9 @@
 const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
 const aiService = require('../services/aiService');
-const twilio = require('twilio');
 const { generateSpeech } = require('../services/hfService');
+const { sendSMS } = require('../services/smsService');
+const crypto = require('crypto');
 
 /**
  * Controller for handling all telephony and passenger related operations.
@@ -95,7 +96,8 @@ const notifyJourney = async (req, res) => {
 };
 
 const notifyJourneyLogic = async (busId) => {
-  console.log(`[CallController] Processing notifications for bus: ${busId}`);
+  const traceId = crypto.randomBytes(4).toString('hex');
+  console.log(`[Trace:${traceId}] 🚀 Starting Notification Batch for bus: ${busId}`);
 
   const { data: passengers, error: fetchError } = await supabase
     .from('passengers')
@@ -103,7 +105,8 @@ const notifyJourneyLogic = async (busId) => {
     .eq('bus_id', busId);
 
   if (fetchError || !passengers || passengers.length === 0) {
-    throw new Error('No passengers found for this journey.');
+    console.warn(`[Trace:${traceId}] No passengers found for this journey.`);
+    return { success: false, message: 'No passengers found.' };
   }
 
   let queuedCount = 0;
@@ -129,16 +132,20 @@ const notifyJourneyLogic = async (busId) => {
         callLogId: callLog.id 
       };
 
-      await addCallToQueue(passengerPayload);
+      await addCallToQueue({ 
+        ...passengerPayload, 
+        traceId 
+      });
       queuedCount++;
     } catch (err) {
-      console.error(`[CallController] Failed to queue passenger ${passenger.id}:`, err.message);
+      console.error(`[Trace:${traceId}] Failed to queue passenger ${passenger.id}:`, err.message);
     }
   }
 
+  console.log(`[Trace:${traceId}] 🏁 Batch Dispatch Complete. Total queued: ${queuedCount}`);
   return {
     success: true,
-    message: `Successfully queued calls for ${queuedCount} passengers on bus ${busId}.`
+    message: `Successfully queued calls for ${queuedCount} passengers.`
   };
 };
 
@@ -165,7 +172,8 @@ const handleIncomingVoice = (req, res) => {
 
 const handleExotelVoice = async (req, res) => {
   const { callLogId } = req.query;
-  console.log(`[Exotel Webhook] Incoming call LogID: ${callLogId}`);
+  const traceId = crypto.randomBytes(3).toString('hex');
+  console.log(`[Trace:${traceId}] Incoming Exotel session for Log:${callLogId}`);
 
   try {
     let greeting = 'Namaste! Welcome to BoardPing.';
@@ -173,13 +181,13 @@ const handleExotelVoice = async (req, res) => {
     if (callLogId) {
       const { data } = await supabase
         .from('call_logs')
-        .select('passengers(name, boarding_point, time)')
+        .select('passengers(name, boarding_point, time, buses(agency_id))')
         .eq('id', callLogId)
         .single();
       
       if (data?.passengers) {
         const p = data.passengers;
-        greeting = `Namaste ${p.name}, our bus to ${p.boarding_point} is departing at ${p.time}. Please reach 15 minutes early.`;
+        greeting = `Namaste ${p.name}, our bus to ${p.boarding_point} is departing at ${p.time}. Please reach the boarding point 15 minutes early.`;
       }
     }
 
@@ -189,17 +197,20 @@ const handleExotelVoice = async (req, res) => {
     let exoml = '<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n';
     
     if (hfUrl) {
-      exoml += `    <Play>${hfUrl}</Play>\n`;
+      exoml += `    <Gather action="${process.env.BASE_URL}/api/calls/voice/respond?callLogId=${callLogId}" input="speech" timeout="5" language="en-IN">\n`;
+      exoml += `        <Play>${hfUrl}</Play>\n`;
+      exoml += `    </Gather>\n`;
+      exoml += `    <Redirect>${process.env.BASE_URL}/api/calls/voice/respond?callLogId=${callLogId}&amp;timeout=true</Redirect>\n`;
     } else {
       exoml += `    <Say voice="female" language="en-IN">${greeting}</Say>\n`;
     }
     
-    exoml += '    <Hangup/>\n</Response>';
+    exoml += '</Response>';
     res.send(exoml);
 
   } catch (error) {
-    console.error('[Exotel Error] ExoML Generation:', error);
-    res.status(500).send('Error generating response');
+    console.error(`[Trace:${traceId}] ExoML Error:`, error.message);
+    res.status(500).send('<Response><Hangup/></Response>');
   }
 };
 
@@ -208,11 +219,10 @@ const handleVoiceRespond = async (req, res) => {
   const callLogId = req.query.callLogId;
   const twimlObj = new twilio.twiml.VoiceResponse();
 
-  if (!userSpeech || userSpeech.trim().length === 0) {
-    twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'I did not catch that. Could you please repeat?');
-    twimlObj.redirect(`/api/calls/voice/${callLogId ? `?callLogId=${callLogId}` : ''}`); 
-    res.set('Content-Type', 'text/xml');
-    return res.send(twimlObj.toString());
+  if (timeout || !userSpeech || userSpeech.trim().length === 0) {
+    // If user didn't speak, or it's a timeout, trigger SMS fallback
+    console.log(`[VoiceRespond] No user speech for Log:${callLogId}. Triggering SMS fallback.`);
+    return sendSMSFallbackInternal(callLogId, req, res);
   }
 
   try {
@@ -249,27 +259,44 @@ const handleVoiceRespond = async (req, res) => {
         await supabase.from('call_logs').update({ is_flagged: true }).eq('id', callLogId);
       }
 
-      const gather = twimlObj.gather({
-        input: 'speech',
-        action: `/api/calls/voice/respond${callLogId ? `?callLogId=${callLogId}` : ''}`,
-        speechTimeout: 'auto',
-        language: passengerLanguage
-      });
-      
       if (hfUrl) {
-        gather.play(hfUrl);
+          res.type('application/xml');
+          res.send(`
+            <Response>
+                <Play>${hfUrl}</Play>
+                <Hangup/>
+            </Response>
+          `);
       } else {
-        gather.say({ voice: 'Polly.Aditi', language: passengerLanguage }, aiResponse);
+        res.type('application/xml');
+        res.send(`<Response><Say language="en-IN">${aiResponse}</Say><Hangup/></Response>`);
       }
-
-    res.set('Content-Type', 'text/xml');
-    res.send(twimlObj.toString());
   } catch (error) {
-    console.error('[VoiceRespond Error]:', error);
-    twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'Sorry, my system is currently down. Please try again later.');
-    res.set('Content-Type', 'text/xml');
-    res.send(twimlObj.toString());
+    console.error('[VoiceRespond Error]:', error.message);
+    res.status(500).send('<Response><Hangup/></Response>');
   }
+};
+
+/**
+ * Internal Helper for SMS Fallback
+ */
+const sendSMSFallbackInternal = async (callLogId, req, res) => {
+    try {
+      const { data: log } = await supabase.from('call_logs').select('*, passengers(*)').eq('id', callLogId).single();
+      const p = log.passengers;
+      
+      const message = `Hi ${p.name}, our AI assistant couldn't reach you. Your bus departs from ${p.boarding_point} at ${p.time}. Please be there early!`;
+      
+      await sendSMS(p.phone, message);
+
+      if (res) {
+          res.type('application/xml');
+          res.send('<Response><Say language="en-IN">I could not hear you. I am sending the details via S.M.S. Have a safe journey!</Say><Hangup/></Response>');
+      }
+    } catch (err) {
+      console.error('[Fallback SMS Error]:', err.message);
+      if (res) res.status(500).send('<Response><Hangup/></Response>');
+    }
 };
 
 const handleVoiceStatus = async (req, res) => {
