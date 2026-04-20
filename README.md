@@ -1,116 +1,145 @@
-# BoardPing – L4 Distributed AI Voice Notification System
+# 🚌 Boardly – Enterprise AI Fleet Dispatch
 
-BoardPing is an AI-powered voice notification and conversational bot designed to automate passenger communications for mass transit architectures (e.g., AbhiBus, RedBus). 
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Exotel](https://img.shields.io/badge/Telephony-Exotel-EB2A2E)](https://exotel.com/)
+[![Groq](https://img.shields.io/badge/LLM-Groq-f55036)](https://groq.com/)
+[![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![BullMQ](https://img.shields.io/badge/Tasks-BullMQ-e43a15)](https://bullmq.io/)
 
-Built for enterprise scale, it handles thousands of concurrent calls through robust BullMQ architectures, providing ultra-low latency AI interactions, autonomous scheduling, and real-time operator observability.
-
-## 🌟 Premium Features
-
-1.  **Autonomous Journey Dispatches**: Background scheduler targets journeys 30m before departure—zero manual effort.
-2.  **Multilingual AI Engine**: Real-time conversational support in **English, Hindi, Telugu, and Kannada**.
-3.  **Semantic Intent Detection**: Automatically flags passengers who report as **"LATE"** using LLM analysis.
-4.  **SMS Fallback System**: High-visibility "Unreachable Manifest" panel for one-click SMS notifications if voice fails.
-5.  **Multi-Operator Architecture**: Built-in support for data isolation across multiple transit companies (SaaS model).
-6.  **Advanced Observability**: Track granular statuses (`Busy`, `No-Answer`, `Ringing`) and call durations in real-time.
-
-## 🚌 BoardPing | AI-Powered Voice Notifications
-
-BoardPing is an enterprise-grade AI notification agent designed for transport operators. It automates passenger dispatch calls using Twilio and Groq (LLM), ensuring manifests are clear and passengers are notified autonomously.
-
-### 🌟 Key Features
-- **Intelligent Talk Loops**: Conversational AI interactions using Llama 3 (via Groq).
-- **BullMQ Task Engine**: Reliable retry logic and concurrency management via Redis.
-- **Robust Validation Layer**: All ingress paths are strictly typed and sanitized using Zod 3.
-- **Indian Locale Optimization**: Automated phone normalization (+91...) and multilingual voice support.
-- **Service-Oriented AI**: Decoupled AI interaction logic in `src/services/aiService.js`.
-- **Real-time Manifest**: Live operator dashboard with semantic intent extraction and status tracking.
-
-## 💡 System Architecture
-
-1. **Trigger Engine** - Journey-based notifications seamlessly trigger parallel worker dispatches.
-2. **Postgres Storage** - Supabase natively queries `passengers` mapped to `journeys`.
-3. **Queue Distribution** - `BullMQ` + `Redis` effortlessly manage job delegation, rate-limiting, and error-retry logic.
-4. **Telephony Bridge** - Twilio Voice API connects programmatic systems directly to global networks.
-5. **Conversational Engine** - Groq (`llama-3.3-70b`) provides <1s latency for natural voice interactions.
+**Boardly** (internally *BoardPing*) is a high-fidelity, L4 distributed AI voice notification system designed for modern mass transit architectures. It automates passenger dispatches, manifest verification, and real-time conversational assistance using ultra-low latency LLMs and localized telephony.
 
 ---
 
-## 🛠 Tech Stack
-- **Backend**: Node.js, Express, BullMQ, Redis
-- **Intelligence**: LLM (Groq / OpenAI API compatible)
-- **Telephony**: Twilio Voice (Webhooks & Status Callbacks)
-- **Database**: Supabase (PostgreSQL)
-- **Validation**: Zod (Type Safety & Normalization)
-- **Frontend**: Vanilla JS, Chart.js, CSS Glassmorphism
+## 🌟 Premium Capabilities
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%">
+        <h3>🤖 Autonomous Dispatch</h3>
+        <p>Zero-touch journey scheduling. Background workers trigger passenger calls exactly 30 minutes before departure based on live manifest data.</p>
+      </td>
+      <td width="50%">
+        <h3>🗣️ Localized Conversational AI</h3>
+        <p>Interactive voice flows with <1s latency. Native support for English, Hindi, Telugu, and Kannada via Groq's high-speed inference.</p>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%">
+        <h3>📊 Real-time Observability</h3>
+        <p>Bento-style operator dashboard showing granular call states (Ringing, No-Answer, Busy) and semantic intent extraction.</p>
+      </td>
+      <td width="50%">
+        <h3>⚖️ Enterprise Scaling</h3>
+        <p>Built with BullMQ and Redis to handle thousands of concurrent calls with reliable retry logic and dead-letter queueing.</p>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
-## 🚀 Quick Setup (Production)
+## 🏗️ System Architecture
 
-### Prerequisites
-- Node.js (v18+)
-- Redis
-- Twilio Account (Voice + SMS capability)
-- Groq API Key
-- Supabase Project
+```mermaid
+graph TD
+    subgraph "Data & Scheduling"
+        A[Supabase Postgres] -->|Upcoming Journeys| B[Journey Scheduler]
+        B -->|Add Jobs| C[Redis / BullMQ Queue]
+    end
 
-### Installation
+    subgraph "Execution Engine"
+        C -->|Distribute| D[Worker Nodes]
+        D -->|Initiate Call| E{Telephony Bridge}
+    end
+
+    subgraph "Telephony & AI"
+        E -->|Primary| F[Exotel API]
+        E -->|Fallback| G[Twilio API]
+        F -->|Voice Stream/ExoML| H[AI Interaction Service]
+        H -->|Llama 3.3| I[Groq LLM Engine]
+        I -->|Semantic Analysis| J[Intent Flagging: LATE/CANCEL]
+    end
+
+    subgraph "Frontend Control"
+        J -->|Update Status| K[Operator Dashboard]
+        K -->|One-click SMS| L[Fallback Messaging]
+    end
+```
+
+---
+
+## 🛠️ Tech Stack & Integration
+
+- **Runtime**: Node.js & Express
+- **State Management**: Redis + BullMQ (Distributed Task Processing)
+- **Database**: Supabase (PostgreSQL with Real-time Listeners)
+- **Telephony**: Exotel (Indian Compliance) & Twilio
+- **Intelligence**: Groq (Llama 3.3 70B) & OpenAI API
+- **Frontend**: Vanilla JS with Glassmorphism, CSS Variables, and Chart.js
+
+---
+
+## 🚀 Quick Setup
+
+### 1. Clone & Install
 ```bash
 git clone https://github.com/jaggureddy11/ai-voice-calling-bot.git
 cd ai-call-bot
 npm install
 ```
 
-### Environment Variables
-Copy `.env.example` -> `.env` and fill it with your credentials:
-```bash
-BASE_URL=https://your-public-url.loca.lt
-GROQ_API_KEY=your_key
+### 2. Environment Configuration
+Create a `.env` file from the template and fill in your credentials.
+
+```env
+# Server
+PORT=3000
+BASE_URL=https://your-tunnel.loca.lt
+
+# Redis (Local or Cloud)
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+
+# Telephony (Primary: Exotel)
+EXOTEL_SID=...
+EXOTEL_API_KEY=...
+EXOTEL_API_TOKEN=...
+EXOTEL_SUBDOMAIN=...
+EXOTEL_CALLER_ID=...
+
+# Telephony (Legacy: Twilio)
 TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+
+# AI Inference (Groq)
+GROQ_API_KEY=gsk_...
+
+# Database (Supabase)
+SUPABASE_URL=...
+SUPABASE_KEY=...
 ```
 
-### Running the System
+### 3. Database Migration
+Ensure your Supabase tables (`journeys`, `passengers`, `call_logs`, `ai_logs`) are configured with the necessary extensions for intent flagging and attempt counts.
+
+### 4. Launch
 ```bash
-# Start autonomous engine & backend
-npm run dev
+# Run backend and frontend monitoring concurrently
+npm run dev:all
 ```
 
 ---
 
-## 📊 Database Schema Extensions
+## 🎯 Impact & ROI
 
-To enable the latest features, ensure your Supabase schema includes:
-
-```sql
--- Call Log Extensions
-ALTER TABLE call_logs ADD COLUMN attempt_count INTEGER DEFAULT 0;
-ALTER TABLE call_logs ADD COLUMN is_flagged BOOLEAN DEFAULT false;
-ALTER TABLE call_logs ADD COLUMN duration INTEGER DEFAULT 0;
-
--- AI Log Extensions
-ALTER TABLE ai_logs ADD COLUMN intent TEXT;
-
--- Journey Scheduler
-ALTER TABLE journeys ADD COLUMN notified_at TIMESTAMP WITH TIME ZONE;
-```
+- **Zero Manual Calling**: Eliminates the need for bus operators or drivers to manually notify passengers.
+- **Improved Manifest Clarity**: Automatically flags passengers who report being late, allowing operators to make sequence adjustments in real-time.
+- **Multilingual Support**: Breaks communication barriers in diverse regions with native language voice bots.
+- **Audit Ready**: Comprehensive logging of every call duration, status, and AI transcript for compliance and performance tuning.
 
 ---
 
-## 🔗 Endpoints
-
-### 1. The Autonomous Scheduler
-The system background processes upcoming journeys every minute. 
-`GET /api/calls/notify-journey` (Manual fallback still supported).
-
-### 2. Live Monitoring
-`GET /api/calls/passengers/:journeyId` - Fetch real-time manifest status.
-
-### 3. AI Interaction Dashboard
-`GET /api/calls/ai-logs` - Fetch live transcripts and intent analysis.
-
----
-
-## 🎯 Impact Metrics
-- 🚀 **Efficiency**: Reduces driver manual calls by 100%.
-- 🗣️ **Accessibility**: Localized AI support improves passenger NPS in rural regions.
-- 👨‍💻 **Observability**: Live SQL logs map call lifecycle states identically to massive platform dashboards.
+<div align="center">
+  <p>Built for the future of smart transit. Designed by <b>Boardly Engineering</b>.</p>
+</div>
