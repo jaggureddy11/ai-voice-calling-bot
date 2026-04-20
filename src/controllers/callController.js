@@ -1,6 +1,12 @@
 const supabase = require('../config/supabase');
 const { addCallToQueue } = require('../jobs/callQueue');
 const aiService = require('../services/aiService');
+const twilio = require('twilio');
+const { generateSpeech } = require('../services/hfService');
+
+/**
+ * Controller for handling all telephony and passenger related operations.
+ */
 
 const getOperators = async (req, res) => {
   const { data, error } = await supabase.from('operators').select('*').order('name');
@@ -72,26 +78,25 @@ const addPassenger = async (req, res) => {
   res.status(201).json(data[0]);
 };
 
+/**
+ * Triggers notification calls for an entire journey/bus.
+ */
 const notifyJourney = async (req, res) => {
   try {
     const busId = req.body.busId || req.body.journeyId || req.params.journeyId;
-    const { force, message_override } = req.body;
-    
     if (!busId) return res.status(400).json({ error: 'busId is required.' });
 
     const result = await notifyJourneyLogic(busId);
     res.status(200).json(result);
   } catch (error) {
-
-    console.error('Error triggering journey calls:', error);
+    console.error('[CallController] Error triggering journey calls:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
 const notifyJourneyLogic = async (busId) => {
-  console.log(`Fetching passengers for bus ${busId} from Supabase...`);
+  console.log(`[CallController] Processing notifications for bus: ${busId}`);
 
-  // Fetch passengers
   const { data: passengers, error: fetchError } = await supabase
     .from('passengers')
     .select('*')
@@ -102,44 +107,44 @@ const notifyJourneyLogic = async (busId) => {
   }
 
   let queuedCount = 0;
-
   for (const passenger of passengers) {
     if (!passenger.phone) continue;
     
-    // Create a Call Log in Supabase FIRST to mark as initiated
-    const { data: callLog, error: logError } = await supabase
-      .from('call_logs')
-      .insert([{ 
-        passenger_id: passenger.id, 
-        status: 'queued',
-        attempt_count: 0
-      }])
-      .select()
-      .single();
-      
-    if (logError) {
-        console.error('Error creating call log:', logError);
-        continue;
+    try {
+      // Initialize call log entry
+      const { data: callLog, error: logError } = await supabase
+        .from('call_logs')
+        .insert([{ 
+          passenger_id: passenger.id, 
+          status: 'queued',
+          attempt_count: 0
+        }])
+        .select()
+        .single();
+        
+      if (logError) throw logError;
+
+      const passengerPayload = {
+        ...passenger,
+        callLogId: callLog.id 
+      };
+
+      await addCallToQueue(passengerPayload);
+      queuedCount++;
+    } catch (err) {
+      console.error(`[CallController] Failed to queue passenger ${passenger.id}:`, err.message);
     }
-
-    // Inject callLogId so the worker can update it later
-    const passengerPayload = {
-      ...passenger,
-      callLogId: callLog.id 
-    };
-
-    // Push passenger task to job queue
-    await addCallToQueue(passengerPayload);
-    queuedCount++;
   }
 
   return {
     success: true,
-    message: `Successfully fetched and queued calls for ${queuedCount} passengers on bus ${busId}.`
+    message: `Successfully queued calls for ${queuedCount} passengers on bus ${busId}.`
   };
 };
 
-const twilio = require('twilio');
+/**
+ * TELEPHONY HANDLERS
+ */
 
 const handleIncomingVoice = (req, res) => {
   const twimlObj = new twilio.twiml.VoiceResponse();
@@ -160,22 +165,24 @@ const handleIncomingVoice = (req, res) => {
 
 const handleExotelVoice = async (req, res) => {
   const { callLogId } = req.query;
-  console.log(`[Exotel Webhook Hit]: LogID=${callLogId}`);
+  console.log(`[Exotel Webhook] Incoming call LogID: ${callLogId}`);
 
   try {
     let greeting = 'Namaste! Welcome to BoardPing.';
     
     if (callLogId) {
-      const { data } = await supabase.from('call_logs').select('passengers(name, boarding_point, time)').eq('id', callLogId).single();
+      const { data } = await supabase
+        .from('call_logs')
+        .select('passengers(name, boarding_point, time)')
+        .eq('id', callLogId)
+        .single();
+      
       if (data?.passengers) {
         const p = data.passengers;
         greeting = `Namaste ${p.name}, our bus to ${p.boarding_point} is departing at ${p.time}. Please reach 15 minutes early.`;
       }
     }
 
-    console.log(`[Exotel AI]: Generating premium voice for: "${greeting.substring(0, 20)}..."`);
-    
-    const { generateSpeech } = require('../services/hfService');
     const hfUrl = await generateSpeech(greeting);
 
     res.set('Content-Type', 'text/xml');
@@ -184,24 +191,19 @@ const handleExotelVoice = async (req, res) => {
     if (hfUrl) {
       exoml += `    <Play>${hfUrl}</Play>\n`;
     } else {
-      console.warn('[Exotel AI Warning]: HF Voice failed, using <Say> fallback.');
       exoml += `    <Say voice="female" language="en-IN">${greeting}</Say>\n`;
     }
     
     exoml += '    <Hangup/>\n</Response>';
-    
-    console.log(`[Exotel Response]: Sending ExoML (HF=${!!hfUrl})`);
     res.send(exoml);
 
   } catch (error) {
-    console.error('[Exotel ExoML Error]:', error);
+    console.error('[Exotel Error] ExoML Generation:', error);
     res.status(500).send('Error generating response');
   }
 };
 
-
 const handleVoiceRespond = async (req, res) => {
-
   const userSpeech = req.body.SpeechResult;
   const callLogId = req.query.callLogId;
   const twimlObj = new twilio.twiml.VoiceResponse();
@@ -212,8 +214,6 @@ const handleVoiceRespond = async (req, res) => {
     res.set('Content-Type', 'text/xml');
     return res.send(twimlObj.toString());
   }
-
-  console.log(`[Caller Said]: ${userSpeech}`);
 
   try {
       let passengerName = 'Unknown';
@@ -232,16 +232,10 @@ const handleVoiceRespond = async (req, res) => {
         }
       }
 
-      // Analyze intent using our new service
       const { intent, response: aiResponse } = await aiService.analyzeIntent(userSpeech, passengerLanguage);
-      console.log(`[Intent]: ${intent} -> [AI Response]: ${aiResponse}`);
-
-      // NEW: Generate High-Fidelity Speech via Hugging Face (Kokoro-82M)
-      const { generateSpeech } = require('../services/hfService');
       const hfUrl = await generateSpeech(aiResponse);
-      console.log(`[HF Debug] Generated URL: ${hfUrl}`);
 
-      // LOG TO SUPABASE
+      // Log AI Interaction
       await supabase.from('ai_logs').insert([{
         call_log_id: callLogId,
         passenger_name: passengerName,
@@ -251,12 +245,8 @@ const handleVoiceRespond = async (req, res) => {
         sentiment: intent !== 'GENERAL' ? 'Urgent' : 'Neutral'
       }]);
 
-      // If LATE or CANCEL, flag the call log for the operator dashboard
       if (['LATE', 'CANCEL', 'URGENT'].includes(intent)) {
-        await supabase
-          .from('call_logs')
-          .update({ is_flagged: true })
-          .eq('id', callLogId);
+        await supabase.from('call_logs').update({ is_flagged: true }).eq('id', callLogId);
       }
 
       const gather = twimlObj.gather({
@@ -267,18 +257,15 @@ const handleVoiceRespond = async (req, res) => {
       });
       
       if (hfUrl) {
-        // Use the premium Hugging Face voice
         gather.play(hfUrl);
       } else {
-        // Fallback to Twilio standard
         gather.say({ voice: 'Polly.Aditi', language: passengerLanguage }, aiResponse);
       }
-
 
     res.set('Content-Type', 'text/xml');
     res.send(twimlObj.toString());
   } catch (error) {
-    console.error('AI Interaction Error:', error);
+    console.error('[VoiceRespond Error]:', error);
     twimlObj.say({ voice: 'Polly.Aditi', language: 'en-IN' }, 'Sorry, my system is currently down. Please try again later.');
     res.set('Content-Type', 'text/xml');
     res.send(twimlObj.toString());
@@ -287,7 +274,6 @@ const handleVoiceRespond = async (req, res) => {
 
 const handleVoiceStatus = async (req, res) => {
   const { CallSid, CallStatus, CallDuration } = req.body;
-  console.log(`[Twilio Status Update] Sid: ${CallSid} Status: ${CallStatus} Duration: ${CallDuration}s`);
 
   try {
     const updatePayload = {
@@ -299,20 +285,15 @@ const handleVoiceStatus = async (req, res) => {
       updatePayload.last_error = `Provider status: ${CallStatus}`;
     }
 
-    await supabase
-      .from('call_logs')
-      .update(updatePayload)
-      .eq('twilio_sid', CallSid);
-
+    await supabase.from('call_logs').update(updatePayload).eq('twilio_sid', CallSid);
     res.status(200).send('OK');
   } catch (error) {
-    console.error('Error updating call status:', error);
+    console.error('[VoiceStatus Error]:', error);
     res.status(500).send('Internal Server Error');
   }
 };
 
 const sendSMSFallback = async (req, res) => {
-
   const { passengerId, message } = req.body;
   const twilioClient = require('../config/twilio');
 
@@ -330,10 +311,9 @@ const sendSMSFallback = async (req, res) => {
     });
 
     await supabase.from('call_logs').update({ status: 'sms-sent' }).eq('passenger_id', passengerId);
-
     res.status(200).json({ success: true, sid: sms.sid });
   } catch (err) {
-    console.error('SMS Fallback Error:', err);
+    console.error('[SMSFallback Error]:', err);
     res.status(500).json({ error: 'Failed to send SMS.' });
   }
 };
@@ -363,31 +343,42 @@ const getDashboardStats = async (req, res) => {
 const seedDatabase = async (req, res) => {
   try {
     const operators = [
-      { id: 'abhibus', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
-      { id: 'redbus', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
-      { id: 'cleartrip', name: 'Cleartrip', tag: 'Premium', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6a/db/5f/6adb5f7d-b581-202b-2e95-5b0b79e3cc91/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg' },
-      { id: 'goibibo', name: 'Goibibo', tag: 'Popular', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/22/08/9c/22089c0f-7ae0-fc05-85fc-f3308649c21d/appIconSet-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg' }
+      { id: 'op_abhi', name: 'Abhibus', tag: 'Smart Partner', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/da/53/3b/da533b00-49a9-1924-4081-7c359e29a306/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg' },
+      { id: 'op_red', name: 'Redbus', tag: 'Global', icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/5e/69/6c5e69e7-7df0-2c27-ed2d-1d6d0c02fd03/AppIconiOS26-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg' }
     ];
 
     const agencies = [
-      { id: 'vrl', name: 'VRL Travels', route_count: 145, rating: 4.8, operator_id: 'abhibus' },
-      { id: 'srs', name: 'SRS Travels', route_count: 89, rating: 4.5, operator_id: 'abhibus' },
-      { id: 'laars', name: "Laar's Travels", route_count: 34, rating: 4.9, operator_id: 'abhibus' },
-      { id: 'kukeshri', name: 'Kukeshri Travels', route_count: 56, rating: 4.2, operator_id: 'redbus' },
-      { id: 'nagashree', name: 'Nagashree Travels', route_count: 42, rating: 4.6, operator_id: 'redbus' }
+      { id: 'ag_vrl', name: 'VRL Travels', route_count: 145, rating: 4.8, operator_id: 'op_abhi' },
+      { id: 'ag_srs', name: 'SRS Travels', route_count: 89, rating: 4.5, operator_id: 'op_abhi' }
     ];
 
     const buses = [
-      { id: 'bus1', number: 'KA 01 AB 1234', agency_id: 'vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
-      { id: 'bus2', number: 'KA 04 VTR 5566', agency_id: 'vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' },
-      { id: 'bus3', number: 'MH 12 XY 9988', agency_id: 'vrl', route: 'MUM → GOA', time: '18:00', status: 'completed' }
+      { id: 'b_1', number: 'KA 01 AB 1234', agency_id: 'ag_vrl', route: 'BLR → HYD', time: '20:30', status: 'upcoming' },
+      { id: 'b_2', number: 'KA 04 VTR 5566', agency_id: 'ag_vrl', route: 'BLR → PUNE', time: '21:15', status: 'boarding' }
+    ];
+
+    // Seed Journeys for the Scheduler (30 minutes from now)
+    const now = new Date();
+    const thirtyMinsLater = new Date(now.getTime() + 30 * 60000);
+    const departureTime = `${thirtyMinsLater.getHours().toString().padStart(2, '0')}:${thirtyMinsLater.getMinutes().toString().padStart(2, '0')}`;
+
+    const journeys = [
+      { id: 'j_1', bus_id: 'b_1', departure_time: departureTime, notified_at: null },
+      { id: 'j_2', bus_id: 'b_2', departure_time: '23:59', notified_at: null }
+    ];
+
+    const passengers = [
+      { id: 'p_demo1', bus_id: 'b_1', name: 'John Doe', phone: '9876543210', boarding_point: 'Majestic', seat_no: 'A1', time: departureTime },
+      { id: 'p_demo2', bus_id: 'b_1', name: 'Jane Smith', phone: '9123456789', boarding_point: 'Electronix City', seat_no: 'B4', time: departureTime }
     ];
 
     await supabase.from('operators').upsert(operators);
     await supabase.from('agencies').upsert(agencies);
     await supabase.from('buses').upsert(buses);
+    await supabase.from('journeys').upsert(journeys);
+    await supabase.from('passengers').upsert(passengers);
 
-    res.status(200).json({ success: true, message: 'Database seeded with demo data.' });
+    res.status(200).json({ success: true, message: 'Database seeded with demographic data and active journeys.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

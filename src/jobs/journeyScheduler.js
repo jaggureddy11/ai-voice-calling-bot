@@ -3,46 +3,57 @@ const { notifyJourneyLogic } = require('../controllers/callController');
 
 /**
  * Scans journeys departing in roughly 30 minutes and triggers calls.
+ * Runs every minute to ensure timely notifications.
  */
 const startJourneyScheduler = () => {
-  console.log('🕒 Journey Scheduler started (Automatic Dispatches enabled)');
+  console.log('🕒 Journey Scheduler: Active (Autonomous Dispatch Mode)');
   
-  // Run every 60 seconds
   setInterval(async () => {
     try {
       const now = new Date();
       
-      // Calculate departure window (30 minutes from now)
+      // Target window: 30 minutes from now
       const targetTime = new Date(now.getTime() + 30 * 60000);
-      const hours = targetTime.getHours().toString().padStart(2, '0');
-      const minutes = targetTime.getMinutes().toString().padStart(2, '0');
-      const timeStr = `${hours}:${minutes}`;
+      
+      // Generate two targets (current minute and next minute) for redundancy
+      const getStr = (d) => `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      
+      const timeStrCurrent = getStr(targetTime);
+      const timeStrNext = getStr(new Date(targetTime.getTime() + 60000));
 
-      console.log(`[Scheduler] Checking for departures at ${timeStr}...`);
+      console.log(`[Scheduler] Checking for departures between ${timeStrCurrent} and ${timeStrNext}...`);
 
-      // Find journeys departing at this time that haven't been notified
+      // Find journeys departing in this window that haven't been notified
       const { data: journeys, error } = await supabase
         .from('journeys')
-        .select('id')
-        .eq('departure_time', timeStr)
+        .select('id, departure_time')
+        .in('departure_time', [timeStrCurrent, timeStrNext])
         .is('notified_at', null);
 
       if (error) throw error;
 
-      for (const journey of journeys) {
-        console.log(`[Scheduler] Auto-triggering calls for Journey: ${journey.id}`);
+      if (journeys && journeys.length > 0) {
+        console.log(`[Scheduler] Found ${journeys.length} pending journeys.`);
         
-        // Use the internal logic to trigger calls
-        await notifyJourneyLogic(journey.id);
-
-        // Mark as notified
-        await supabase
-          .from('journeys')
-          .update({ notified_at: new Date().toISOString() })
-          .eq('id', journey.id);
+        for (const journey of journeys) {
+          console.log(`[Scheduler] Auto-triggering Journey: ${journey.id}`);
+          
+          try {
+            await notifyJourneyLogic(journey.id);
+            
+            // Mark as notified in Supabase immediately
+            await supabase
+              .from('journeys')
+              .update({ notified_at: new Date().toISOString() })
+              .eq('id', journey.id);
+              
+          } catch (logicErr) {
+            console.error(`[Scheduler] Logic failure for Journey ${journey.id}:`, logicErr.message);
+          }
+        }
       }
     } catch (err) {
-      console.error('[Scheduler Error]:', err.message);
+      console.error('[Scheduler Critical Error]:', err.message);
     }
   }, 60000);
 };
