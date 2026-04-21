@@ -222,29 +222,7 @@ function renderAgencies(filter = '') {
     const grid = document.getElementById('agencies-grid');
     grid.innerHTML = '';
     
-    // Check if under repair (Any except Abhibus)
-    if (activeOperator && activeOperator.name.toLowerCase() !== 'abhibus') {
-        grid.style.display = 'block';
-        grid.innerHTML = `
-            <div class="repair-cinema animate-fade-in" style="grid-column: 1/-1;">
-                <div class="robotic-arm"><div class="laser-beam"></div></div>
-                <div class="bus-blueprint">
-                    <div class="window-pane" style="left: 30px; width: 100px;"></div>
-                    <div class="window-pane" style="left: 140px; width: 120px;"></div>
-                    <div class="window-pane" style="left: 270px; width: 110px;"></div>
-                    <div class="wheel-part" style="left: 60px;"></div>
-                    <div class="wheel-part" style="right: 80px;"></div>
-                </div>
-                <div class="repair-status-text">DIAGNOSTIC_ACTIVE: ${activeOperator.name}</div>
-                <p class="repair-tag">
-                    [SYSTEM_SYNC] >> SYNCHRONIZING_FLEET_NODES... [OK]
-                </p>
-            </div>
-        `;
-        return;
-    } else {
-        grid.style.display = 'grid';
-    }
+    grid.style.display = 'grid';
 
     if (!agencies) return;
 
@@ -288,26 +266,7 @@ function renderBuses(filter = '') {
     const grid = document.getElementById('buses-list');
     grid.innerHTML = '';
     
-    // Check if under repair (Any except Abhibus)
-    if (activeOperator && activeOperator.name.toLowerCase() !== 'abhibus') {
-        grid.innerHTML = `
-            <div class="repair-cinema animate-fade-in" style="grid-column: 1/-1;">
-                <div class="robotic-arm"><div class="laser-beam"></div></div>
-                <div class="bus-blueprint">
-                    <div class="window-pane" style="left: 30px; width: 100px;"></div>
-                    <div class="window-pane" style="left: 140px; width: 120px;"></div>
-                    <div class="window-pane" style="left: 270px; width: 110px;"></div>
-                    <div class="wheel-part" style="left: 60px;"></div>
-                    <div class="wheel-part" style="right: 80px;"></div>
-                </div>
-                <div class="repair-status-text">SYSTEM_OPTIMIZING: ${activeOperator.name}</div>
-                <p class="repair-tag">
-                    [DATA_MANIFEST] >> MAPPING_ROUTES... [PENDING]
-                </p>
-            </div>
-        `;
-        return;
-    }
+
 
     if (!buses) return;
     
@@ -593,6 +552,14 @@ function showToast(msg, type = 'info') {
         toast.style.animation = 'fadeOut 0.3s forwards';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+function showNotifications() {
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+        badge.style.display = 'none';
+    }
+    showToast('No new notifications', 'info');
 }
 
 async function fetchSummaryStats() {
